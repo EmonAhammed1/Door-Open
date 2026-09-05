@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import innerSanctuaryImg from "../../assets/drumi/inner-sanctuary.jpg";
 import panelLeftImg from "../../assets/drumi/panel-left-clean.png";
 import panelRightImg from "../../assets/drumi/panel-right-clean.png";
@@ -12,7 +12,6 @@ interface DrumiThresholdProps {
   soundOn: boolean;
   onEnter: () => void;
   onArrived: () => void;
-  onCloseDoors: () => void;
   onToggleSound: () => void;
 }
 
@@ -24,28 +23,98 @@ const DOOR_GEOMETRY = {
   bottom: 695 / 768,
 };
 
+const ENTER_MS = 1300;
+const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
 export function DrumiThreshold({
   phase,
   soundOn,
   onEnter,
   onArrived,
-  onCloseDoors,
   onToggleSound,
 }: DrumiThresholdProps) {
   const stageRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<HTMLDivElement>(null);
+  const sanctuaryBgRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const panelsRef = useRef<HTMLDivElement>(null);
+  const glowRef = useRef<HTMLDivElement>(null);
 
   const natural = useNaturalSize(innerSanctuaryImg);
   const { w: cw, h: ch } = useElementSize(stageRef);
   const geo = natural && cw && ch ? computeCover(cw, ch, natural.w, natural.h) : null;
 
   let rect: { left: number; top: number; width: number; height: number } | null = null;
+  let center = { x: cw / 2, y: ch / 2 };
 
   if (geo) {
     const tl = toPx(geo, DOOR_GEOMETRY.left, DOOR_GEOMETRY.top);
     const br = toPx(geo, DOOR_GEOMETRY.right, DOOR_GEOMETRY.bottom);
     rect = { left: tl.x, top: tl.y, width: br.x - tl.x, height: br.y - tl.y };
+    center = { x: (tl.x + br.x) / 2, y: (tl.y + br.y) / 2 };
   }
 
+  const rectRef = useRef(rect);
+  rectRef.current = rect;
+  const centerRef = useRef(center);
+  centerRef.current = center;
+  const sizeRef = useRef({ cw, ch });
+  sizeRef.current = { cw, ch };
+
+  // Cinematic camera glide through the doorway
+  useEffect(() => {
+    if (phase !== "entering") return;
+
+    const r = rectRef.current;
+    const P = centerRef.current;
+    const { cw: curW, ch: curH } = sizeRef.current;
+    const scene = sceneRef.current;
+    const frame = frameRef.current;
+    const panels = panelsRef.current;
+    const glow = glowRef.current;
+
+    if (!r || !scene || !frame || !panels || !glow) {
+      onArrived();
+      return;
+    }
+
+    const need = Math.max(
+      P.x / Math.max(1, P.x - r.left),
+      (curW - P.x) / Math.max(1, r.left + r.width - P.x),
+      P.y / Math.max(1, P.y - r.top),
+      (curH - P.y) / Math.max(1, r.top + r.height - P.y)
+    );
+    const sEnd = Math.min(3.2, need * 1.05);
+    const start = performance.now();
+    let raf = 0;
+
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / ENTER_MS);
+      const e = easeInOut(t);
+      const s = 1 + (sEnd - 1) * e;
+
+      // Camera moves forward toward the inner sanctuary
+      scene.style.transform = `scale(${s})`;
+
+      // Fade out the surrounding wall and door panels so they don't block the camera
+      const op = String(1 - easeInOut(Math.min(1, t / 0.55)));
+      frame.style.opacity = op;
+      panels.style.opacity = op;
+
+      glow.style.opacity = String(t < 0.4 ? 0.5 + 0.5 * (t / 0.4) : Math.max(0, 1 - (t - 0.4) / 0.6));
+
+      if (t < 1) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        onArrived();
+      }
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [phase, onArrived]);
+
+  const origin = `${center.x}px ${center.y}px`;
   const isOpen = phase === "opening" || phase === "entering";
 
   return (
@@ -79,8 +148,12 @@ export function DrumiThreshold({
         </button>
       </div>
 
-      {/* Brand Header Typography - Stable & Crisp at Top */}
-      <div className="absolute top-0 left-0 right-0 z-45 pt-6 sm:pt-8 pb-3 px-4 flex flex-col items-center text-center pointer-events-none">
+      {/* Brand Header Typography - Centered & Crisp, NEVER Cut Off */}
+      <div
+        className={`absolute top-0 left-0 right-0 z-45 pt-6 sm:pt-8 pb-3 px-4 flex flex-col items-center text-center pointer-events-none transition-opacity duration-300 ${
+          isOpen ? "opacity-0" : "opacity-100"
+        }`}
+      >
         {/* Sacred Droplet Emblem */}
         <div className="w-8 h-8 mb-1.5 flex items-center justify-center text-[#7d6957]">
           <svg viewBox="0 0 40 48" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-7 h-7 drop-shadow-sm">
@@ -103,11 +176,16 @@ export function DrumiThreshold({
         </p>
       </div>
 
-      {/* Main Architectural Scene - ZERO ZOOMING, COMPLETELY STABLE */}
-      <div className="relative w-full h-full">
-        {/* 1. Inside Image (Sanctuary with terrace, lanterns, lake - visible behind open doors) */}
+      {/* Main 3D Scaling Scene */}
+      <div
+        ref={sceneRef}
+        className="relative w-full h-full origin-center transition-transform"
+        style={{ transformOrigin: origin }}
+      >
+        {/* 1. Deepest Background: Inner Sanctuary Terrace (Seen through doorway) */}
         <div
-          className="absolute inset-0 transition-opacity duration-700"
+          ref={sanctuaryBgRef}
+          className="absolute inset-0"
           style={{
             backgroundImage: `url(${innerSanctuaryImg})`,
             backgroundSize: geo ? `${geo.dispW}px ${geo.dispH}px` : "cover",
@@ -115,22 +193,20 @@ export function DrumiThreshold({
           }}
         />
 
-        {/* 2. Double Arched Door Panels (Opens in 3D without any camera zoom!) */}
+        {/* 2. 3D Mathematical Arched Door Panels (Opens wide first!) */}
         {rect && geo && (
-          <div className="absolute inset-0 pointer-events-none z-10">
+          <div ref={panelsRef} className="absolute inset-0 pointer-events-none z-10">
             {/* Left Door Panel */}
             <div
-              className="absolute transition-transform duration-[1200ms] cubic-bezier(0.25, 1, 0.5, 1)"
+              className="absolute transition-all duration-[1100ms] cubic-bezier(0.25, 1, 0.5, 1)"
               style={{
                 left: rect.left,
                 top: rect.top,
                 width: rect.width / 2 + 1,
                 height: rect.height,
                 transformOrigin: "left center",
-                transform: isOpen ? "rotateY(-86deg)" : "rotateY(0deg)",
-                filter: isOpen
-                  ? "brightness(0.7) drop-shadow(14px 0 20px rgba(0,0,0,0.45))"
-                  : "brightness(1)",
+                transform: isOpen ? "rotateY(-96deg) scaleX(0.9)" : "rotateY(0deg)",
+                filter: isOpen ? "brightness(0.65)" : "brightness(1)",
               }}
             >
               <img
@@ -142,17 +218,15 @@ export function DrumiThreshold({
 
             {/* Right Door Panel */}
             <div
-              className="absolute transition-transform duration-[1200ms] cubic-bezier(0.25, 1, 0.5, 1)"
+              className="absolute transition-all duration-[1100ms] cubic-bezier(0.25, 1, 0.5, 1)"
               style={{
                 left: rect.left + rect.width / 2 - 1,
                 top: rect.top,
                 width: rect.width / 2 + 1,
                 height: rect.height,
                 transformOrigin: "right center",
-                transform: isOpen ? "rotateY(86deg)" : "rotateY(0deg)",
-                filter: isOpen
-                  ? "brightness(0.7) drop-shadow(-14px 0 20px rgba(0,0,0,0.45))"
-                  : "brightness(1)",
+                transform: isOpen ? "rotateY(96deg) scaleX(0.9)" : "rotateY(0deg)",
+                filter: isOpen ? "brightness(0.65)" : "brightness(1)",
               }}
             >
               <img
@@ -166,7 +240,8 @@ export function DrumiThreshold({
 
         {/* 3. The Single Architectural Stone Archway Frame (Walls, olive tree, curtains, floor) */}
         <div
-          className="absolute inset-0 pointer-events-none z-20"
+          ref={frameRef}
+          className="absolute inset-0 pointer-events-none z-20 transition-opacity duration-500"
           style={{
             backgroundImage: `url(${frameSurroundImg})`,
             backgroundSize: geo ? `${geo.dispW}px ${geo.dispH}px` : "cover",
@@ -174,61 +249,39 @@ export function DrumiThreshold({
           }}
         />
 
-        {/* 4. Controls at the Bottom of the Portal */}
-        <div className="absolute bottom-[5%] sm:bottom-[6%] left-0 right-0 flex flex-col items-center justify-center z-40">
-          {!isOpen ? (
-            /* Closed State CTA */
-            <div className="flex flex-col items-center animate-fadeIn">
-              <button
-                type="button"
-                onClick={onEnter}
-                className="px-8 py-3 sm:px-10 sm:py-3.5 rounded-full bg-[#9a7470] hover:bg-[#886460] active:scale-95 text-[#fbf7f4] font-['Cinzel',serif] text-[0.76rem] sm:text-[0.88rem] uppercase tracking-[0.26em] font-medium shadow-[0_8px_24px_rgba(100,60,60,0.35)] transition-all duration-300 border border-[#bfa29f]/40 flex items-center gap-2 group cursor-pointer"
-              >
-                <span>JOIN THE JOURNEY</span>
-                <svg
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
-                >
-                  <path d="M4 10H16M16 10L11 5M16 10L11 15" />
-                </svg>
-              </button>
+        {/* 4. CTA Button (Join the Journey) */}
+        <div
+          className={`absolute bottom-[5%] sm:bottom-[6%] left-0 right-0 flex flex-col items-center justify-center z-40 transition-all duration-300 ${
+            isOpen ? "opacity-0 pointer-events-none scale-95" : "opacity-100 pointer-events-auto"
+          }`}
+        >
+          <button
+            type="button"
+            onClick={onEnter}
+            className="px-8 py-3 sm:px-10 sm:py-3.5 rounded-full bg-[#9a7470] hover:bg-[#886460] active:scale-95 text-[#fbf7f4] font-['Cinzel',serif] text-[0.76rem] sm:text-[0.88rem] uppercase tracking-[0.26em] font-medium shadow-[0_8px_24px_rgba(100,60,60,0.35)] transition-all duration-300 border border-[#bfa29f]/40 flex items-center gap-2 group cursor-pointer"
+          >
+            <span>JOIN THE JOURNEY</span>
+            <svg
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+            >
+              <path d="M4 10H16M16 10L11 5M16 10L11 15" />
+            </svg>
+          </button>
 
-              <span className="mt-2.5 text-[#af9680] font-['Cinzel',serif] text-[0.62rem] sm:text-[0.72rem] uppercase tracking-[0.3em] font-medium drop-shadow-sm">
-                STEP INTO YOUR INNER WORLD
-              </span>
-            </div>
-          ) : (
-            /* Open State Controls: Doors are open, showing the sanctuary! */
-            <div className="flex flex-col sm:flex-row items-center gap-3 animate-fadeIn">
-              <button
-                type="button"
-                onClick={onArrived}
-                className="px-8 py-3 rounded-full bg-[#9a7470] hover:bg-[#886460] text-white font-['Cinzel',serif] text-[0.76rem] sm:text-[0.84rem] uppercase tracking-[0.24em] font-medium shadow-[0_8px_24px_rgba(100,60,60,0.4)] transition-all duration-300 border border-[#c4a9a6]/50 flex items-center gap-2 cursor-pointer group"
-              >
-                <span>STEP INSIDE SANCTUARY</span>
-                <span className="transition-transform group-hover:translate-x-1 font-sans">→</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={onCloseDoors}
-                className="px-6 py-2.5 rounded-full bg-[#342921]/70 hover:bg-[#342921]/90 text-white/90 font-['Cinzel',serif] text-[0.7rem] sm:text-[0.76rem] uppercase tracking-[0.2em] font-medium backdrop-blur-md transition-all border border-white/20 cursor-pointer"
-              >
-                <span>↺ Close Doors</span>
-              </button>
-            </div>
-          )}
+          <span className="mt-2.5 text-[#af9680] font-['Cinzel',serif] text-[0.62rem] sm:text-[0.72rem] uppercase tracking-[0.3em] font-medium drop-shadow-sm">
+            STEP INTO YOUR INNER WORLD
+          </span>
         </div>
       </div>
 
-      {/* Gentle Warm Light Glow when doors open */}
+      {/* Light Bloom through Doorway */}
       <div
-        className={`absolute inset-0 pointer-events-none z-25 transition-opacity duration-1000 ${
-          isOpen ? "opacity-60 bg-radial from-[#fff4d6]/40 via-[#f8e5c8]/15 to-transparent" : "opacity-0"
-        }`}
+        ref={glowRef}
+        className="absolute inset-0 pointer-events-none z-35 transition-opacity duration-700 opacity-0 bg-radial from-[#fff5dd]/80 via-[#f5d9ad]/30 to-transparent"
       />
     </div>
   );
