@@ -28,7 +28,8 @@ function getParam(key: string, fallback = "") {
   }
 }
 
-const TRIGGER_MODE  = (getParam("trigger", "auto") as "auto" | "click");
+// Default is "click" — auto-start ONLY when WordPress plugin explicitly passes ?trigger=auto
+const TRIGGER_MODE  = (getParam("trigger", "click") as "auto" | "click");
 const BUTTON_TEXT   = getParam("btn", "JOIN THE JOURNEY");
 const REDIRECT_URL  = getParam("redirect", "");
 
