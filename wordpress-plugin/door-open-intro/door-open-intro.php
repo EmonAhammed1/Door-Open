@@ -123,9 +123,9 @@ function doi_get_threshold_html( $args = [] ) {
 
       <!-- 3D Scene Layer -->
       <div class="tar-scene">
-        <div class="tar-scene__base" style="background-image: url('<?php echo $door_img; ?>');"></div>
+        <div class="tar-scene__base" data-src="<?php echo $door_img; ?>" style="background-image: url('<?php echo $door_img; ?>');"></div>
         <div class="tar-scene__clip">
-          <div class="tar-scene__room" style="background-image: url('<?php echo $room_img; ?>');"></div>
+          <div class="tar-scene__room" data-src="<?php echo $room_img; ?>" style="background-image: url('<?php echo $room_img; ?>');"></div>
         </div>
         <div class="tar-scene__panels">
           <div class="tar-panel tar-panel--left"><span class="tar-panel__shade"></span></div>

@@ -192,10 +192,20 @@
   }
 
   function loadSize(src, cb) {
+    if (!src) { cb({ w: 1672, h: 941 }); return; }
     var img = new Image();
-    img.onload = function () { cb({ w: img.naturalWidth, h: img.naturalHeight }); };
-    img.onerror = function () { cb({ w: 1672, h: 941 }); };
+    var called = false;
+    function done(w, h) {
+      if (called) return;
+      called = true;
+      cb({ w: w || 1672, h: h || 941 });
+    }
+    img.onload = function () { done(img.naturalWidth, img.naturalHeight); };
+    img.onerror = function () { done(1672, 941); };
     img.src = src;
+    if (img.complete && img.naturalWidth > 0) {
+      done(img.naturalWidth, img.naturalHeight);
+    }
   }
 
   var easeInOut = function (t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
@@ -227,11 +237,11 @@
 
     document.body.classList.add('tar-locked');
 
-    var baseSrc = (base && base.getAttribute('data-src')) || cfg.doorImageUrl || '';
-    var roomSrc = (room && room.getAttribute('data-src')) || cfg.roomImageUrl || '';
+    var baseSrc = (base && (base.getAttribute('data-src') || (base.style.backgroundImage || '').replace(/url\(['"]?(.*?)['"]?\)/, '$1'))) || cfg.doorImageUrl || '';
+    var roomSrc = (room && (room.getAttribute('data-src') || (room.style.backgroundImage || '').replace(/url\(['"]?(.*?)['"]?\)/, '$1'))) || cfg.roomImageUrl || '';
 
-    if (base) base.style.backgroundImage = 'url("' + baseSrc + '")';
-    if (room) room.style.backgroundImage = 'url("' + roomSrc + '")';
+    if (base && baseSrc) base.style.backgroundImage = 'url("' + baseSrc + '")';
+    if (room && roomSrc) room.style.backgroundImage = 'url("' + roomSrc + '")';
 
     var pct = {
       l: parseFloat(root.getAttribute('data-door-left') || '35.0') / 100,
