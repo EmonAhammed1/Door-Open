@@ -2,8 +2,8 @@
 /**
  * Plugin Name:  Door Open Intro
  * Plugin URI:   https://github.com/EmonAhammed1/Door-Open
- * Description:  Cinematic door-opening animation overlay for WordPress. Site intro + Widget/Shortcode mode.
- * Version:      2.1.0
+ * Description:  Cinematic 3D door-opening animation overlay for WordPress. Pure CSS3 3D transforms & Web Audio API. 100% compatible with Elementor, Gutenberg, and all themes.
+ * Version:      3.0.0
  * Author:       Door Open
  * License:      GPL-2.0-or-later
  * Text Domain:  door-open-intro
@@ -12,7 +12,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-define( 'DOI_VERSION',    '2.1.0' );
+define( 'DOI_VERSION',    '3.0.0' );
 define( 'DOI_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DOI_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'DOI_OPTIONS',    'doi_settings' );
@@ -21,10 +21,13 @@ define( 'DOI_OPTIONS',    'doi_settings' );
 function doi_defaults() {
     return [
         'site_intro_enabled' => 1,
-        'widget_enabled'     => 0,
-        'button_text'        => 'JOIN THE JOURNEY',
-        'preload_url'        => '',
+        'widget_enabled'     => 1,
+        'sound_enabled'      => 1,
         'session_once'       => 1,
+        'button_text'        => 'ENTER THE ROOM',
+        'preload_url'        => '',
+        'door_image_url'     => DOI_PLUGIN_URL . 'assets/threshold-doors.jpg',
+        'room_image_url'     => DOI_PLUGIN_URL . 'assets/room-interior.jpg',
     ];
 }
 
@@ -33,224 +36,158 @@ function doi_get( $key ) {
     return $opts[ $key ] ?? null;
 }
 
-// ─── Helper: overlay iframe src URL ──────────────────────────────────────────
-function doi_overlay_src( $trigger = 'auto', $redirect = '' ) {
-    $btn  = doi_get( 'button_text' ) ?: 'JOIN THE JOURNEY';
-    $base = DOI_PLUGIN_URL . 'door-overlay/overlay.html';
-    $args = [
-        'trigger' => $trigger,
-        'btn'     => rawurlencode( $btn ),
-    ];
-    if ( $redirect ) {
-        $args['redirect'] = rawurlencode( $redirect );
-    }
-    return add_query_arg( $args, $base );
-}
-
-// ─── Enqueue frontend assets (CSS + JS) ──────────────────────────────────────
-// This is the ONLY place JS is output — works with ALL page builders including Elementor.
-// wp_enqueue_scripts fires before the page renders, so scripts are always present.
+// ─── Enqueue Frontend Assets (CSS + JS) ──────────────────────────────────────
 add_action( 'wp_enqueue_scripts', 'doi_enqueue_frontend_assets' );
 function doi_enqueue_frontend_assets() {
     if ( is_admin() ) return;
 
-    $overlay_file = DOI_PLUGIN_DIR . 'door-overlay/overlay.html';
-    if ( ! file_exists( $overlay_file ) ) return;
+    $intro_on  = (bool) doi_get( 'site_intro_enabled' );
+    $widget_on = (bool) doi_get( 'widget_enabled' );
 
-    // ── Shared CSS ────────────────────────────────────────────────────────────
-    $css = '
-/* Door Open Intro — shared styles */
-.doi-widget-btn {
-  display: inline-flex; align-items: center; gap: 10px;
-  padding: 14px 32px; border-radius: 999px;
-  background: #9a7470; color: #fbf7f4;
-  font-family: "Cinzel", serif; font-size: 0.8rem;
-  letter-spacing: 0.28em; text-transform: uppercase; font-weight: 500;
-  border: 1.5px solid rgba(196,162,159,0.5); cursor: pointer;
-  box-shadow: 0 8px 32px rgba(100,55,50,0.4), 0 2px 8px rgba(0,0,0,0.15);
-  transition: background 0.25s ease, transform 0.15s ease;
-  position: relative; overflow: hidden;
-}
-.doi-widget-btn:hover { background: #7f5e5b; }
-.doi-widget-btn:active { transform: scale(0.97); }
-.doi-widget-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+    // Enqueue if either mode is active
+    if ( ! $intro_on && ! $widget_on ) return;
 
-/* Site intro overlay */
-#doi-site-overlay {
-  position: fixed; inset: 0; width: 100vw; height: 100vh;
-  z-index: 999999; background: transparent;
-  transition: opacity 1.1s cubic-bezier(0.4,0,0.2,1), visibility 1.1s;
-  opacity: 1; visibility: visible; pointer-events: auto;
-}
-#doi-site-overlay.doi--fading  { opacity: 0; visibility: hidden; pointer-events: none; }
-#doi-site-overlay.doi--gone    { display: none; }
+    // Enqueue 3D Door CSS
+    wp_enqueue_style(
+        'doi-door-open',
+        DOI_PLUGIN_URL . 'assets/door-open.css',
+        [],
+        DOI_VERSION
+    );
 
-/* Widget/shortcode overlay */
-#doi-widget-overlay {
-  display: none; position: fixed; inset: 0; width: 100vw; height: 100vh;
-  z-index: 999999; background: transparent; opacity: 1;
-  transition: opacity 1.1s cubic-bezier(0.4,0,0.2,1);
-}
-#doi-widget-overlay.doi--visible { display: block; }
-#doi-widget-overlay.doi--fading  { opacity: 0; pointer-events: none; }
+    // Enqueue 3D Door JS
+    wp_enqueue_script(
+        'doi-door-open',
+        DOI_PLUGIN_URL . 'assets/door-open.js',
+        [],
+        DOI_VERSION,
+        true // in footer
+    );
 
-/* Shared iframe rule */
-#doi-site-overlay iframe,
-#doi-widget-overlay iframe {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  border: none; background: transparent;
+    // Pass settings directly to JavaScript
+    $door_img = doi_get( 'door_image_url' ) ?: DOI_PLUGIN_URL . 'assets/threshold-doors.jpg';
+    $room_img = doi_get( 'room_image_url' ) ?: DOI_PLUGIN_URL . 'assets/room-interior.jpg';
+    $btn_text = doi_get( 'button_text' )     ?: 'ENTER THE ROOM';
+    $url      = doi_get( 'preload_url' )     ?: '';
+
+    wp_localize_script( 'doi-door-open', 'DOI_CONFIG', [
+        'siteIntroEnabled' => $intro_on,
+        'widgetEnabled'    => $widget_on,
+        'soundEnabled'     => (bool) doi_get( 'sound_enabled' ),
+        'sessionOnce'      => (bool) doi_get( 'session_once' ),
+        'buttonText'       => esc_html( $btn_text ),
+        'preloadUrl'       => esc_url( $url ),
+        'doorImageUrl'     => esc_url( $door_img ),
+        'roomImageUrl'     => esc_url( $room_img ),
+        'pluginUrl'        => esc_url( DOI_PLUGIN_URL ),
+    ] );
 }
 
-body.doi-locked { overflow: hidden !important; }
-';
-    wp_register_style( 'doi-styles', false );
-    wp_enqueue_style( 'doi-styles' );
-    wp_add_inline_style( 'doi-styles', $css );
-
-    // ── Shared JS ─────────────────────────────────────────────────────────────
-    // Uses a dummy handle so we can attach inline JS the WordPress-standard way.
-    // This JS is output in <head> via wp_enqueue_scripts — BEFORE Elementor or
-    // any page builder renders content, so it is always available on click.
-    wp_register_script( 'doi-script', false, [], DOI_VERSION, false );
-    wp_enqueue_script( 'doi-script' );
-
-    $session_once   = doi_get( 'session_once' ) ? 'true' : 'false';
-    $intro_enabled  = doi_get( 'site_intro_enabled' ) ? 'true' : 'false';
-    $widget_enabled = doi_get( 'widget_enabled' ) ? 'true' : 'false';
-
-    $js = '
-window.DOI = {
-  introEnabled:  ' . $intro_enabled . ',
-  widgetEnabled: ' . $widget_enabled . ',
-  sessionOnce:   ' . $session_once . ',
-  SESSION_KEY:   "doi_v21_shown"
-};
-
-/* ── Widget overlay: open on button click ─────────────────────────────────── */
-window.doiOpenOverlay = function(btn) {
-  if (!window.DOI.widgetEnabled) return;
-  var src     = btn.getAttribute("data-doi-src");
-  var bg      = btn.getAttribute("data-doi-bg") || "transparent";
-  var overlay = document.getElementById("doi-widget-overlay");
-  var iframe  = document.getElementById("doi-widget-iframe");
-  if (!overlay || !iframe || !src) {
-    console.warn("[door_open] Overlay elements not found. src=" + src);
-    return;
-  }
-  iframe.src = src;
-  overlay.style.background = bg;
-  overlay.classList.add("doi--visible");
-  overlay.classList.remove("doi--fading");
-  document.body.classList.add("doi-locked");
-
-  var done = false;
-  function dismiss() {
-    if (done) return; done = true;
-    document.body.classList.remove("doi-locked");
-    overlay.classList.add("doi--fading");
-    setTimeout(function() {
-      overlay.classList.remove("doi--visible", "doi--fading");
-      iframe.src = "";
-    }, 1200);
-  }
-
-  function msgH(e) {
-    if (e.data && e.data.type === "door-animation-done") {
-      window.removeEventListener("message", msgH);
-      dismiss();
-    }
-  }
-  window.addEventListener("message", msgH);
-  var t = setTimeout(dismiss, 16000);
-
-  function onKey(e) {
-    if (e.key === "Escape") {
-      clearTimeout(t);
-      window.removeEventListener("message", msgH);
-      document.removeEventListener("keydown", onKey);
-      dismiss();
-    }
-  }
-  document.addEventListener("keydown", onKey);
-};
-
-/* ── Site intro overlay: auto-dismiss after animation ─────────────────────── */
-document.addEventListener("DOMContentLoaded", function() {
-  var overlay = document.getElementById("doi-site-overlay");
-  if (!overlay) return;
-
-  if (window.DOI.sessionOnce && sessionStorage.getItem(window.DOI.SESSION_KEY)) {
-    overlay.classList.add("doi--gone");
-    return;
-  }
-  if (window.DOI.sessionOnce) sessionStorage.setItem(window.DOI.SESSION_KEY, "1");
-
-  document.body.classList.add("doi-locked");
-
-  var done = false;
-  function dismiss() {
-    if (done) return; done = true;
-    document.body.classList.remove("doi-locked");
-    overlay.classList.add("doi--fading");
-    setTimeout(function() { overlay.classList.add("doi--gone"); }, 1200);
-  }
-
-  window.addEventListener("message", function(e) {
-    if (e.data && e.data.type === "door-animation-done") dismiss();
-  });
-  setTimeout(dismiss, 15000);
-  document.addEventListener("keydown", function(e) { if (e.key === "Escape") dismiss(); });
-});
-';
-    wp_add_inline_script( 'doi-script', $js );
-}
-
-// ─── TOGGLE 1: Site Intro — inject overlay into every front-end page ──────────
-add_action( 'wp_footer', 'doi_site_intro_overlay', 1 );
-function doi_site_intro_overlay() {
+// ─── Site Intro Overlay (Toggle 1) ───────────────────────────────────────────
+// Placed in wp_footer so page content renders first underneath the doors
+add_action( 'wp_footer', 'doi_render_site_intro_overlay', 1 );
+function doi_render_site_intro_overlay() {
     if ( is_admin() ) return;
     if ( ! doi_get( 'site_intro_enabled' ) ) return;
 
-    $overlay_file = DOI_PLUGIN_DIR . 'door-overlay/overlay.html';
-    if ( ! file_exists( $overlay_file ) ) return;
+    $door_img  = doi_get( 'door_image_url' ) ?: DOI_PLUGIN_URL . 'assets/threshold-doors.jpg';
+    $room_img  = doi_get( 'room_image_url' ) ?: DOI_PLUGIN_URL . 'assets/room-interior.jpg';
+    $btn_text  = doi_get( 'button_text' )     ?: 'ENTER THE ROOM';
+    $url       = doi_get( 'preload_url' )     ?: '';
+    $skip_key  = doi_get( 'session_once' )    ? 'doi_session_entered' : '';
 
-    $src = doi_overlay_src( 'auto' );
-    ?>
-    <div id="doi-site-overlay" role="presentation" aria-hidden="true">
-      <iframe
-        src="<?php echo esc_url( $src ); ?>"
-        title="Welcome animation"
-        allow="autoplay"
-        allowtransparency="true"
-        scrolling="no"
-        frameborder="0"
-      ></iframe>
-    </div>
-    <?php
+    echo doi_get_threshold_html( [
+        'door_img' => $door_img,
+        'room_img' => $room_img,
+        'btn_text' => $btn_text,
+        'url'      => $url,
+        'skip_key' => $skip_key,
+    ] );
 }
 
-// ─── TOGGLE 2: Widget overlay DOM — inject once if widget mode is on ──────────
-// The div is always injected in footer; doiOpenOverlay() (from wp_enqueue_scripts) controls it.
-add_action( 'wp_footer', 'doi_widget_overlay_dom', 2 );
-function doi_widget_overlay_dom() {
-    if ( is_admin() ) return;
-    if ( ! doi_get( 'widget_enabled' ) ) return;
+// ─── Threshold HTML Template ─────────────────────────────────────────────────
+function doi_get_threshold_html( $args = [] ) {
+    $door_img = esc_url( $args['door_img'] ?? ( DOI_PLUGIN_URL . 'assets/threshold-doors.jpg' ) );
+    $room_img = esc_url( $args['room_img'] ?? ( DOI_PLUGIN_URL . 'assets/room-interior.jpg' ) );
+    $btn_text = esc_html( $args['btn_text'] ?? ( doi_get( 'button_text' ) ?: 'ENTER THE ROOM' ) );
+    $url      = esc_attr( $args['url'] ?? ( doi_get( 'preload_url' ) ?: '' ) );
+    $skip_key = esc_attr( $args['skip_key'] ?? '' );
+
+    ob_start();
     ?>
-    <div id="doi-widget-overlay" role="dialog" aria-label="Door animation" aria-hidden="true">
-      <iframe
-        id="doi-widget-iframe"
-        title="Welcome animation"
-        allow="autoplay"
-        allowtransparency="true"
-        scrolling="no"
-        frameborder="0"
-      ></iframe>
-    </div>
+    <section id="tar-threshold" class="tar-threshold"
+             data-door-left="37.2" data-door-right="62.8" data-door-top="15.5" data-door-bottom="86.5"
+             data-lintel-y="11.8"
+             data-home-url="<?php echo $url; ?>"
+             data-skip-key="<?php echo $skip_key; ?>">
+
+      <!-- ===== SCENE (Artwork + 3D Door Leaves) ===== -->
+      <div class="tar-scene">
+        <div class="tar-scene__base" data-src="<?php echo $door_img; ?>"></div>
+        <div class="tar-scene__clip">
+          <div class="tar-scene__room" data-src="<?php echo $room_img; ?>"></div>
+        </div>
+        <div class="tar-scene__panels">
+          <div class="tar-panel tar-panel--left"><span class="tar-panel__shade"></span></div>
+          <div class="tar-panel tar-panel--right"><span class="tar-panel__shade"></span></div>
+          <div class="tar-seam"></div>
+        </div>
+        <div class="tar-lintel"><span>✠</span>IBÁ AṢẸ EGÚN<span>✠</span></div>
+      </div>
+
+      <div class="tar-glow"></div>
+      <div class="tar-flicker"></div>
+      <div class="tar-vignette"></div>
+      <div class="tar-grain"></div>
+
+      <!-- ===== UI LAYER ===== -->
+      <div class="tar-threshold__ui">
+        <header class="tar-topbar">
+          <div class="tar-logo">
+            <span class="tar-logo__name">The<br>Ancestors’<br>Room</span>
+            <span class="tar-logo__rule">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="2.4"/><path d="M12 1.5v6M12 16.5v6M1.5 12h6M16.5 12h6"/></svg>
+            </span>
+            <span class="tar-logo__tag">Rooted. Grounded. Guided.</span>
+          </div>
+          <nav class="tar-topbar__nav">
+            <button class="tar-nav-link" type="button" data-tar-sound aria-pressed="false">Sound <span class="tar-eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
+          </nav>
+        </header>
+
+        <div class="tar-threshold__content">
+          <div class="tar-threshold__scrim">
+            <h1 class="tar-display tar-glow-text">There is a Room<br>Beyond This Door.</h1>
+            <svg class="tar-ornament tar-threshold__ornament" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
+              <circle cx="12" cy="12" r="2.4"/><path d="M12 1.5v6M12 16.5v6M1.5 12h6M16.5 12h6"/>
+              <path d="M12 1.5l-1.6 2.2M12 1.5l1.6 2.2M12 22.5l-1.6-2.2M12 22.5l1.6-2.2M1.5 12l2.2-1.6M1.5 12l2.2 1.6M22.5 12l-2.2-1.6M22.5 12l-2.2 1.6"/>
+            </svg>
+            <p>
+              A place where memory is kept.<br>
+              Where tradition is carried forward.<br>
+              Where the living remember<br>
+              the ones who came before.
+            </p>
+            <div style="margin-top: 36px;">
+              <button class="tar-btn" type="button" data-tar-enter>
+                <span><?php echo $btn_text; ?></span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h17M14 6l6 6-6 6"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <footer class="tar-threshold__foot">
+          <p class="tar-smallcaps">Same Roots.<br>Different Generations.<br>Always Home.</p>
+          <p class="tar-smallcaps tar-threshold__foot-right">People. Places. Practices.<br>You Belong Here.</p>
+        </footer>
+      </div>
+    </section>
     <?php
+    return ob_get_clean();
 }
 
-// ─── Shortcode — ONLY outputs HTML, zero <script> tags ───────────────────────
-// JS is already on the page via wp_enqueue_scripts above.
+// ─── Shortcode: [door_open] (Toggle 2) ────────────────────────────────────────
 add_action( 'init', 'doi_register_shortcodes' );
 function doi_register_shortcodes() {
     add_shortcode( 'door_open',       'doi_shortcode_render' );
@@ -258,47 +195,54 @@ function doi_register_shortcodes() {
 }
 
 function doi_shortcode_render( $atts ) {
-    if ( ! doi_get( 'widget_enabled' ) ) {
-        if ( current_user_can( 'edit_posts' ) ) {
-            return '<p style="background:#fff3cd;color:#856404;padding:8px 12px;border-radius:4px;font-size:0.82em;display:inline-block;">'
-                . '⚠️ <strong>[door_open]</strong>: Enable <em>Widget / Shortcode Mode</em> in '
-                . '<a href="' . admin_url( 'options-general.php?page=door-open-intro' ) . '">Door Open Intro settings</a>.'
-                . '</p>';
-        }
-        return '';
-    }
-
-    $overlay_file = DOI_PLUGIN_DIR . 'door-overlay/overlay.html';
-    if ( ! file_exists( $overlay_file ) ) {
-        return '<p style="color:#c62828;font-size:0.82em;">[door_open] overlay.html not found. '
-            . '<a href="' . admin_url( 'options-general.php?page=door-open-intro' ) . '">See settings</a>.</p>';
-    }
-
     $atts = shortcode_atts( [
-        'text' => doi_get( 'button_text' ) ?: 'JOIN THE JOURNEY',
-        'url'  => doi_get( 'preload_url' ) ?: '',
-        'bg'   => 'transparent',
+        'mode'     => 'button', // 'button' or 'intro'
+        'text'     => doi_get( 'button_text' ) ?: 'ENTER THE ROOM',
+        'url'      => doi_get( 'preload_url' ) ?: '',
+        'door_img' => doi_get( 'door_image_url' ) ?: ( DOI_PLUGIN_URL . 'assets/threshold-doors.jpg' ),
+        'room_img' => doi_get( 'room_image_url' ) ?: ( DOI_PLUGIN_URL . 'assets/room-interior.jpg' ),
     ], $atts, 'door_open' );
 
-    $src = doi_overlay_src( 'click', esc_url( $atts['url'] ) );
+    // Ensure assets are loaded even if page builders bypass standard footer enqueue
+    if ( ! wp_script_is( 'doi-door-open', 'enqueued' ) ) {
+        doi_enqueue_frontend_assets();
+    }
 
-    // Pure HTML — no <script> tags — safe for Elementor, Gutenberg, WPBakery, etc.
+    // Mode: full threshold intro embed
+    if ( strtolower( $atts['mode'] ) === 'intro' ) {
+        return doi_get_threshold_html( [
+            'door_img' => $atts['door_img'],
+            'room_img' => $atts['room_img'],
+            'btn_text' => $atts['text'],
+            'url'      => $atts['url'],
+            'skip_key' => '',
+        ] );
+    }
+
+    // Mode: interactive trigger button
     return sprintf(
-        '<button
-           type="button"
-           class="doi-widget-btn"
-           data-doi-src="%s"
-           data-doi-bg="%s"
-           onclick="doiOpenOverlay(this)"
-           aria-label="%s"
-         >
-           <span>%s</span>
-           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-             <path d="M4 10H16M16 10L11 5M16 10L11 15"/>
-           </svg>
-         </button>',
-        esc_attr( $src ),
-        esc_attr( $atts['bg'] ),
+        '<div class="doi-widget-button-wrap">
+           <button
+             type="button"
+             class="doi-btn"
+             data-doi-trigger="1"
+             data-doi-url="%s"
+             data-door-img="%s"
+             data-room-img="%s"
+             data-btn-text="%s"
+             onclick="window.doiOpenDoor && window.doiOpenDoor(this)"
+             aria-label="%s"
+           >
+             <span>%s</span>
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+               <path d="M3 12h17M14 6l6 6-6 6"/>
+             </svg>
+           </button>
+         </div>',
+        esc_url( $atts['url'] ),
+        esc_url( $atts['door_img'] ),
+        esc_url( $atts['room_img'] ),
+        esc_attr( $atts['text'] ),
         esc_attr( $atts['text'] ),
         esc_html( $atts['text'] )
     );
@@ -314,238 +258,231 @@ class DOI_Widget extends WP_Widget {
         parent::__construct(
             'doi_door_widget',
             __( 'Door Open Animation', 'door-open-intro' ),
-            [ 'description' => __( 'Cinematic door-opening button for any sidebar/section.', 'door-open-intro' ) ]
+            [ 'description' => __( 'Cinematic 3D door-opening trigger button.', 'door-open-intro' ) ]
         );
     }
     public function widget( $args, $instance ) {
-        $text = ! empty( $instance['text'] ) ? $instance['text'] : doi_get( 'button_text' );
-        $url  = ! empty( $instance['url'] )  ? $instance['url']  : '';
         echo $args['before_widget'];
-        echo do_shortcode( '[door_open text="' . esc_attr( $text ) . '" url="' . esc_url( $url ) . '"]' );
+        $text = ! empty( $instance['text'] ) ? $instance['text'] : ( doi_get( 'button_text' ) ?: 'ENTER THE ROOM' );
+        $url  = ! empty( $instance['url'] )  ? $instance['url']  : ( doi_get( 'preload_url' ) ?: '' );
+        echo do_shortcode( '[door_open text="' . esc_attr( $text ) . '" url="' . esc_attr( $url ) . '"]' );
         echo $args['after_widget'];
     }
     public function form( $instance ) {
-        $text = $instance['text'] ?? '';
+        $text = $instance['text'] ?? 'ENTER THE ROOM';
         $url  = $instance['url']  ?? '';
         ?>
         <p>
-          <label for="<?php echo $this->get_field_id('text'); ?>">Button Text:</label>
-          <input class="widefat" id="<?php echo $this->get_field_id('text'); ?>"
-            name="<?php echo $this->get_field_name('text'); ?>" type="text"
-            value="<?php echo esc_attr($text); ?>" placeholder="<?php echo esc_attr(doi_get('button_text')); ?>">
+            <label for="<?php echo esc_attr( $this->get_field_id( 'text' ) ); ?>"><?php _e( 'Button Label:' ); ?></label>
+            <input class="widefat" id="<?php echo esc_attr( $this->get_field_id( 'text' ) ); ?>"
+                   name="<?php echo esc_attr( $this->get_field_name( 'text' ) ); ?>"
+                   type="text" value="<?php echo esc_attr( $text ); ?>">
         </p>
         <p>
-          <label for="<?php echo $this->get_field_id('url'); ?>">Redirect URL:</label>
-          <input class="widefat" id="<?php echo $this->get_field_id('url'); ?>"
-            name="<?php echo $this->get_field_name('url'); ?>" type="url"
-            value="<?php echo esc_attr($url); ?>" placeholder="https://">
+            <label for="<?php echo esc_attr( $this->get_field_id( 'url' ) ); ?>"><?php _e( 'Target Page URL (leave blank to reveal current page):' ); ?></label>
+            <input class="widefat" id="<?php echo esc_attr( $this->get_field_id( 'url' ) ); ?>"
+                   name="<?php echo esc_attr( $this->get_field_name( 'url' ) ); ?>"
+                   type="url" value="<?php echo esc_attr( $url ); ?>">
         </p>
         <?php
     }
-    public function update( $new_instance, $old_instance ) {
+    public function update( $new, $old ) {
         return [
-            'text' => sanitize_text_field( $new_instance['text'] ),
-            'url'  => esc_url_raw( $new_instance['url'] ),
+            'text' => sanitize_text_field( $new['text'] ?? '' ),
+            'url'  => esc_url_raw( $new['url'] ?? '' ),
         ];
     }
 }
 
-// ─── Admin Settings Page ──────────────────────────────────────────────────────
-add_action( 'admin_menu', function() {
-    add_options_page( 'Door Open Intro', 'Door Open Intro', 'manage_options', 'door-open-intro', 'doi_settings_page' );
-} );
+// ─── Settings Page (WP Admin → Settings → Door Open Intro) ───────────────────
+add_action( 'admin_menu', 'doi_admin_menu' );
+function doi_admin_menu() {
+    add_options_page(
+        __( 'Door Open Intro Settings', 'door-open-intro' ),
+        __( 'Door Open Intro', 'door-open-intro' ),
+        'manage_options',
+        'door-open-intro',
+        'doi_settings_page'
+    );
+}
 
-add_action( 'admin_init', function() {
-    register_setting( 'doi_settings_group', DOI_OPTIONS, [ 'sanitize_callback' => 'doi_sanitize_settings' ] );
-} );
+add_action( 'admin_init', 'doi_register_settings' );
+function doi_register_settings() {
+    register_setting( 'doi_settings_group', DOI_OPTIONS, [
+        'type'              => 'array',
+        'sanitize_callback' => 'doi_sanitize_settings',
+    ] );
+}
 
-function doi_sanitize_settings( $input ) {
+function doi_sanitize_settings( $in ) {
     return [
-        'site_intro_enabled' => ! empty( $input['site_intro_enabled'] ) ? 1 : 0,
-        'widget_enabled'     => ! empty( $input['widget_enabled'] )     ? 1 : 0,
-        'button_text'        => sanitize_text_field( $input['button_text'] ?? 'JOIN THE JOURNEY' ),
-        'preload_url'        => esc_url_raw( $input['preload_url'] ?? '' ),
-        'session_once'       => ! empty( $input['session_once'] ) ? 1 : 0,
+        'site_intro_enabled' => empty( $in['site_intro_enabled'] ) ? 0 : 1,
+        'widget_enabled'     => empty( $in['widget_enabled'] )     ? 0 : 1,
+        'sound_enabled'      => empty( $in['sound_enabled'] )      ? 0 : 1,
+        'session_once'       => empty( $in['session_once'] )       ? 0 : 1,
+        'button_text'        => sanitize_text_field( $in['button_text'] ?? 'ENTER THE ROOM' ),
+        'preload_url'        => esc_url_raw( $in['preload_url'] ?? '' ),
+        'door_image_url'     => esc_url_raw( $in['door_image_url'] ?? ( DOI_PLUGIN_URL . 'assets/threshold-doors.jpg' ) ),
+        'room_image_url'     => esc_url_raw( $in['room_image_url'] ?? ( DOI_PLUGIN_URL . 'assets/room-interior.jpg' ) ),
     ];
 }
 
 function doi_settings_page() {
     if ( ! current_user_can( 'manage_options' ) ) return;
-
-    $saved = false;
-    if ( isset( $_POST['_doi_nonce'] ) && wp_verify_nonce( $_POST['_doi_nonce'], 'doi_save' ) ) {
-        update_option( DOI_OPTIONS, doi_sanitize_settings( $_POST['doi'] ?? [] ) );
-        $saved = true;
-    }
-
-    $overlay_file   = DOI_PLUGIN_DIR . 'door-overlay/overlay.html';
-    $file_ok        = file_exists( $overlay_file );
-    $file_size      = $file_ok ? round( filesize( $overlay_file ) / 1024 ) . ' KB' : '—';
-    $intro_enabled  = (bool) doi_get( 'site_intro_enabled' );
-    $widget_enabled = (bool) doi_get( 'widget_enabled' );
-    $btn_text       = esc_attr( doi_get( 'button_text' ) );
-    $preload_url    = esc_attr( doi_get( 'preload_url' ) );
-    $session_once   = (bool) doi_get( 'session_once' );
+    $opts = wp_parse_args( get_option( DOI_OPTIONS, [] ), doi_defaults() );
     ?>
-    <style>
-      .doi-admin { max-width: 740px; padding-bottom: 40px; }
-      .doi-admin h1 { font-size: 1.45rem; margin: 0 0 4px; display:flex; align-items:center; gap:10px; }
-      .doi-admin .doi-ver { font-size:0.7rem; color:#999; font-weight:400; }
-      .doi-card { background:#fff; border:1px solid #e2e2e2; border-radius:10px; padding:22px 26px; margin:18px 0; box-shadow:0 2px 6px rgba(0,0,0,0.04); }
-      .doi-card h2 { margin:0 0 5px; font-size:0.97rem; }
-      .doi-card .doi-desc { color:#666; font-size:0.83rem; margin:0 0 18px; line-height:1.6; }
-      .doi-row { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:10px 0; }
-      .doi-row-label { font-size:0.9rem; color:#1d2327; }
-      .doi-row-label small { display:block; color:#888; font-size:0.77rem; margin-top:2px; }
-      /* Toggle */
-      .doi-toggle { position:relative; display:inline-block; width:46px; height:24px; flex-shrink:0; }
-      .doi-toggle input { opacity:0; width:0; height:0; }
-      .doi-slider { position:absolute; cursor:pointer; inset:0; background:#ccc; border-radius:24px; transition:.3s; }
-      .doi-slider:before { content:''; position:absolute; height:18px; width:18px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.3s; box-shadow:0 1px 4px rgba(0,0,0,0.2); }
-      .doi-toggle input:checked + .doi-slider { background:#9a7470; }
-      .doi-toggle input:checked + .doi-slider:before { transform:translateX(22px); }
-      /* Fields */
-      .doi-field { margin:14px 0 0; }
-      .doi-field label { display:block; font-size:0.83rem; color:#555; margin-bottom:4px; font-weight:600; }
-      .doi-field input[type=text], .doi-field input[type=url] { width:100%; max-width:420px; padding:8px 11px; border:1px solid #d0d0d0; border-radius:6px; font-size:0.87rem; transition:border-color .2s; }
-      .doi-field input:focus { border-color:#9a7470; outline:none; box-shadow:0 0 0 2px rgba(154,116,112,0.15); }
-      .doi-field .doi-hint { font-size:0.75rem; color:#888; margin-top:4px; line-height:1.5; }
-      .doi-hr { border:none; border-top:1px solid #eee; margin:16px 0; }
-      .doi-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:12px; font-size:0.75rem; font-weight:600; }
-      .doi-badge--ok  { background:#e8f5e9; color:#2e7d32; }
-      .doi-badge--err { background:#fdecea; color:#c62828; }
-      .doi-code { background:#f6f7f7; border:1px solid #e2e2e2; border-radius:5px; padding:8px 12px; font-family:monospace; font-size:0.8rem; color:#444; margin:8px 0; }
-      .doi-save-row { margin:22px 0 0; display:flex; align-items:center; gap:14px; }
-      .doi-save-btn { padding:10px 26px; background:#9a7470; color:#fff; border:none; border-radius:6px; font-size:0.88rem; cursor:pointer; font-weight:600; transition:background .2s; }
-      .doi-save-btn:hover { background:#7f5e5b; }
-      .doi-ok-msg { color:#2e7d32; font-size:0.85rem; font-weight:600; }
-    </style>
-
-    <div class="wrap doi-admin">
-      <h1>🚪 Door Open Intro <span class="doi-ver">v<?php echo esc_html(DOI_VERSION); ?></span></h1>
-
-      <?php if ($saved): ?>
-        <div class="notice notice-success is-dismissible"><p><strong>✅ Settings saved!</strong></p></div>
-      <?php endif; ?>
-
-      <p style="margin:8px 0;">
-        <?php if ($file_ok): ?>
-          <span class="doi-badge doi-badge--ok">✅ overlay.html installed (<?php echo esc_html($file_size); ?>)</span>
-        <?php else: ?>
-          <span class="doi-badge doi-badge--err">❌ overlay.html not found — see Installation below</span>
-        <?php endif; ?>
+    <div class="wrap" style="max-width:860px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+      <h1 style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:1.4em;">🚪</span>
+        <strong>Door Open Intro</strong>
+        <span style="font-size:13px; font-weight:normal; background:#e8d5a3; color:#4a3722; padding:3px 10px; border-radius:12px;">v<?php echo DOI_VERSION; ?></span>
+      </h1>
+      <p style="color:#666; font-size:1.05em; margin-top:2px;">
+        Cinematic 3D door-opening animation with procedural audio. Compatible with Elementor, Gutenberg, and all page builders.
       </p>
 
-      <form method="post" action="">
-        <?php wp_nonce_field('doi_save', '_doi_nonce'); ?>
+      <?php settings_errors(); ?>
 
-        <!-- Toggle 1: Site Intro -->
-        <div class="doi-card">
-          <h2>🎬 Site Intro Mode</h2>
-          <p class="doi-desc">
-            Door animation auto-plays when visitors arrive at your site.
-            The WordPress page loads behind it — visible through the arch doorway.
-            Doors swing open → zoom through → overlay fades away.
-          </p>
+      <form method="post" action="options.php" style="background:#fff; border:1px solid #ccd0d4; border-radius:10px; padding:28px; box-shadow:0 3px 15px rgba(0,0,0,0.05); margin-top:20px;">
+        <?php settings_fields( 'doi_settings_group' ); ?>
 
-          <div class="doi-row">
-            <div class="doi-row-label">
-              Enable Site Intro
-              <small>Auto-plays the door animation on site entry</small>
-            </div>
-            <label class="doi-toggle">
-              <input type="checkbox" name="doi[site_intro_enabled]" value="1" <?php checked($intro_enabled); ?>>
-              <span class="doi-slider"></span>
-            </label>
+        <style>
+          .doi-toggle-row { display:flex; justify-content:space-between; align-items:flex-start; padding:18px 0; border-bottom:1px solid #f0f0f1; }
+          .doi-toggle-row:last-child { border-bottom:none; }
+          .doi-toggle-info { flex:1; padding-right:24px; }
+          .doi-toggle-info strong { font-size:1.05em; color:#1d2327; display:block; margin-bottom:4px; }
+          .doi-toggle-info p { margin:0; color:#646970; font-size:0.9em; line-height:1.5; }
+          .doi-switch { position:relative; display:inline-block; width:52px; height:28px; flex-shrink:0; margin-top:4px; }
+          .doi-switch input { opacity:0; width:0; height:0; }
+          .doi-slider { position:absolute; cursor:pointer; inset:0; background-color:#ccc; border-radius:28px; transition:0.3s cubic-bezier(0.4,0,0.2,1); }
+          .doi-slider:before { position:absolute; content:""; height:20px; width:20px; left:4px; bottom:4px; background-color:white; border-radius:50%; transition:0.3s cubic-bezier(0.4,0,0.2,1); box-shadow:0 2px 4px rgba(0,0,0,0.2); }
+          input:checked + .doi-slider { background-color:#c9a66b; }
+          input:checked + .doi-slider:before { transform:translateX(24px); }
+          .doi-field-row { padding:18px 0; border-bottom:1px solid #f0f0f1; }
+          .doi-field-row label { display:block; font-weight:600; margin-bottom:6px; color:#1d2327; }
+          .doi-field-row input[type="text"], .doi-field-row input[type="url"] { width:100%; max-width:540px; padding:8px 12px; font-size:14px; border:1px solid #8c8f94; border-radius:6px; }
+          .doi-badge { display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; padding:2px 8px; border-radius:4px; }
+          .doi-badge--primary { background:#e8f0fe; color:#1a73e8; }
+          .doi-badge--gold { background:#fbf3e6; color:#9d7a3f; }
+        </style>
+
+        <div class="doi-toggle-row">
+          <div class="doi-toggle-info">
+            <strong style="display:flex; align-items:center; gap:8px;">
+              <span class="doi-badge doi-badge--primary">Mode 1</span>
+              Site Intro Mode (Website Opening)
+            </strong>
+            <p>When someone visits your website, show the cinematic full-screen door intro. The visitor clicks the button (or presses Enter), the procedural sound swells, the 3D doors swing open, camera zooms in, and reveals your website seamlessly.</p>
           </div>
-
-          <hr class="doi-hr">
-
-          <div class="doi-row">
-            <div class="doi-row-label">
-              Show Once Per Session
-              <small>ON = one time per browser session &nbsp;|&nbsp; OFF = every page load</small>
-            </div>
-            <label class="doi-toggle">
-              <input type="checkbox" name="doi[session_once]" value="1" <?php checked($session_once); ?>>
-              <span class="doi-slider"></span>
-            </label>
-          </div>
+          <label class="doi-switch">
+            <input type="checkbox" name="<?php echo DOI_OPTIONS; ?>[site_intro_enabled]" value="1" <?php checked( $opts['site_intro_enabled'], 1 ); ?>>
+            <span class="doi-slider"></span>
+          </label>
         </div>
 
-        <!-- Toggle 2: Widget / Shortcode -->
-        <div class="doi-card">
-          <h2>🧩 Widget / Shortcode Mode</h2>
-          <p class="doi-desc">
-            Place a door-open button anywhere. Clicking it triggers the full-screen door animation.
-            Works with Elementor, Gutenberg, Classic Editor, and all page builders.
-          </p>
-
-          <div class="doi-row">
-            <div class="doi-row-label">
-              Enable Widget &amp; Shortcode
-              <small>Activates <code>[door_open]</code> shortcode + "Door Open Animation" sidebar widget</small>
-            </div>
-            <label class="doi-toggle">
-              <input type="checkbox" name="doi[widget_enabled]" value="1" <?php checked($widget_enabled); ?>>
-              <span class="doi-slider"></span>
-            </label>
+        <div class="doi-toggle-row">
+          <div class="doi-toggle-info">
+            <strong style="display:flex; align-items:center; gap:8px;">
+              <span class="doi-badge doi-badge--gold">Mode 2</span>
+              Widget / Shortcode Mode [door_open]
+            </strong>
+            <p>Enable the <code>[door_open]</code> shortcode to place door-opening buttons in any Elementor section, container, or page.</p>
           </div>
-
-          <?php if ($widget_enabled): ?>
-          <hr class="doi-hr">
-          <p style="font-size:0.83rem;color:#555;margin:0 0 4px;"><strong>Shortcode:</strong></p>
-          <div class="doi-code">[door_open]</div>
-          <div class="doi-code">[door_open text="Enter" url="/about"]</div>
-          <p style="font-size:0.75rem;color:#888;margin:4px 0 0;">
-            <code>text</code> — button label &nbsp;|&nbsp; <code>url</code> — page to go to after animation
-          </p>
-          <?php endif; ?>
+          <label class="doi-switch">
+            <input type="checkbox" name="<?php echo DOI_OPTIONS; ?>[widget_enabled]" value="1" <?php checked( $opts['widget_enabled'], 1 ); ?>>
+            <span class="doi-slider"></span>
+          </label>
         </div>
 
-        <!-- Global Settings -->
-        <div class="doi-card">
-          <h2>⚙️ Global Settings</h2>
-
-          <div class="doi-field">
-            <label for="doi-btn-text">Button Text</label>
-            <input type="text" id="doi-btn-text" name="doi[button_text]"
-              value="<?php echo $btn_text; ?>" placeholder="JOIN THE JOURNEY" maxlength="60">
-            <p class="doi-hint">Default text on the button / CTA label. Shortcode <code>text=""</code> attribute overrides this per-button.</p>
+        <div class="doi-toggle-row">
+          <div class="doi-toggle-info">
+            <strong>Procedural Ambient Sound (Web Audio)</strong>
+            <p>Plays atmospheric drone, candle crackle, and harmonic door swell. Synthesized 100% in browser with Web Audio API — zero audio file downloads.</p>
           </div>
+          <label class="doi-switch">
+            <input type="checkbox" name="<?php echo DOI_OPTIONS; ?>[sound_enabled]" value="1" <?php checked( $opts['sound_enabled'], 1 ); ?>>
+            <span class="doi-slider"></span>
+          </label>
+        </div>
 
-          <div class="doi-field" style="margin-top:18px;">
-            <label for="doi-preload-url">Default Redirect URL (Widget Mode)</label>
-            <input type="url" id="doi-preload-url" name="doi[preload_url]"
-              value="<?php echo $preload_url; ?>" placeholder="<?php echo esc_attr(home_url('/')); ?>">
-            <p class="doi-hint">After the animation completes, navigate to this URL. Leave blank to stay on the same page. Shortcode <code>url=""</code> attribute overrides per-button.</p>
+        <div class="doi-toggle-row">
+          <div class="doi-toggle-info">
+            <strong>Show Once Per Visitor Session</strong>
+            <p>When enabled, repeat visitors in the same browser session skip the intro doors and land directly on your site.</p>
           </div>
+          <label class="doi-switch">
+            <input type="checkbox" name="<?php echo DOI_OPTIONS; ?>[session_once]" value="1" <?php checked( $opts['session_once'], 1 ); ?>>
+            <span class="doi-slider"></span>
+          </label>
         </div>
 
-        <!-- Installation -->
-        <div class="doi-card">
-          <h2>📂 Installation / Update</h2>
-          <ol style="line-height:2;color:#555;margin:0 0 0 18px;">
-            <li>In the React project: <code style="background:#f6f7f7;padding:2px 6px;border-radius:3px;">npm run build:overlay</code></li>
-            <li>Copy <code>dist-overlay/overlay.html</code> → <code>wp-content/plugins/door-open-intro/door-overlay/overlay.html</code></li>
-          </ol>
-          <hr class="doi-hr">
-          <p>
-            <a href="<?php echo esc_url(DOI_PLUGIN_URL . 'door-overlay/overlay.html?trigger=click&btn=Preview'); ?>"
-               target="_blank" class="button button-secondary">Preview Overlay ↗</a>
-            &nbsp;
-            <a href="<?php echo esc_url(home_url('/')); ?>" target="_blank" class="button button-primary">View Site ↗</a>
-          </p>
-          <p style="font-size:0.75rem;color:#888;margin:8px 0 0;">
-            <em>To replay: DevTools → Application → Session Storage → delete <code>doi_v21_shown</code></em>
-          </p>
+        <div class="doi-field-row">
+          <label for="doi_button_text">Button Text</label>
+          <input type="text" id="doi_button_text" name="<?php echo DOI_OPTIONS; ?>[button_text]"
+                 value="<?php echo esc_attr( $opts['button_text'] ); ?>" placeholder="ENTER THE ROOM">
+          <p class="description" style="color:#646970; font-size:12px; margin-top:4px;">The label shown on the door trigger button (e.g. "ENTER THE ROOM" or "JOIN THE JOURNEY").</p>
         </div>
 
-        <div class="doi-save-row">
-          <button type="submit" class="doi-save-btn">💾 Save Settings</button>
-          <?php if ($saved): ?><span class="doi-ok-msg">✅ Saved!</span><?php endif; ?>
+        <div class="doi-field-row">
+          <label for="doi_preload_url">Target / Destination URL (Optional)</label>
+          <input type="text" id="doi_preload_url" name="<?php echo DOI_OPTIONS; ?>[preload_url]"
+                 value="<?php echo esc_attr( $opts['preload_url'] ); ?>" placeholder="/home/ or https://yoursite.com/target">
+          <p class="description" style="color:#646970; font-size:12px; margin-top:4px;">Leave completely <strong>blank</strong> to smoothly reveal the current WordPress page underneath the doors!</p>
         </div>
+
+        <div class="doi-field-row">
+          <label for="doi_door_image_url">Door Artwork URL</label>
+          <input type="text" id="doi_door_image_url" name="<?php echo DOI_OPTIONS; ?>[door_image_url]"
+                 value="<?php echo esc_attr( $opts['door_image_url'] ); ?>" placeholder="<?php echo esc_attr( DOI_PLUGIN_URL . 'assets/threshold-doors.jpg' ); ?>">
+          <p class="description" style="color:#646970; font-size:12px; margin-top:4px;">Default closed door image. You can replace with any Media Library file URL.</p>
+        </div>
+
+        <div class="doi-field-row">
+          <label for="doi_room_image_url">Interior Room Artwork URL</label>
+          <input type="text" id="doi_room_image_url" name="<?php echo DOI_OPTIONS; ?>[room_image_url]"
+                 value="<?php echo esc_attr( $opts['room_image_url'] ); ?>" placeholder="<?php echo esc_attr( DOI_PLUGIN_URL . 'assets/room-interior.jpg' ); ?>">
+          <p class="description" style="color:#646970; font-size:12px; margin-top:4px;">Image visible through the door opening as the doors open.</p>
+        </div>
+
+        <p class="submit" style="padding-top:16px;">
+          <input type="submit" name="submit" id="submit" class="button button-primary" style="background:#c9a66b; border-color:#9d7a3f; font-weight:600; padding:4px 22px; height:auto; font-size:14px;" value="Save Changes">
+        </p>
       </form>
+
+      <!-- Shortcode Guide Card -->
+      <div style="background:#fff; border:1px solid #ccd0d4; border-radius:10px; padding:24px; margin-top:24px; box-shadow:0 3px 15px rgba(0,0,0,0.05);">
+        <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;">
+          <span>🧩</span> How to Use Shortcode in Elementor & Gutenberg
+        </h3>
+        <p style="color:#50575e; margin-bottom:14px;">Drop an <strong>HTML Widget</strong> or <strong>Shortcode Block</strong> anywhere and use:</p>
+
+        <table class="widefat striped" style="border-radius:6px; overflow:hidden;">
+          <thead>
+            <tr>
+              <th style="width:40%;">Shortcode</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>[door_open]</code></td>
+              <td>Creates a luxury button with default label. Clicking plays door animation.</td>
+            </tr>
+            <tr>
+              <td><code>[door_open text="JOIN THE JOURNEY"]</code></td>
+              <td>Custom button text.</td>
+            </tr>
+            <tr>
+              <td><code>[door_open text="ENTER" url="/about"]</code></td>
+              <td>Opens doors and navigates to <code>/about</code>.</td>
+            </tr>
+            <tr>
+              <td><code>[door_open mode="intro"]</code></td>
+              <td>Embeds the full-screen 3D door threshold directly inside this page or Canvas!</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
     <?php
 }
