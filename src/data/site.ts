@@ -4,23 +4,22 @@
  */
 
 export const BRAND = {
-  name: "The Ancestors’ Room",
-  nameLines: ["THE", "ANCESTORS’", "ROOM"],
-  tagline: "Rooted. Grounded. Guided.",
+  name: "DRUMI",
+  nameLines: ["DRUMI"],
+  tagline: "A sanctuary for your dreams.",
   lintel: "IBÁ AṢẸ EGÚN",
 };
 
 export const THRESHOLD = {
-  headline: ["There is a Room", "Beyond This Door."],
+  headline: ["DRUMI"],
   body: [
-    "A place where memory is kept.",
-    "Where tradition is carried forward.",
-    "Where the living remember",
-    "the ones who came before.",
+    "A sanctuary for your dreams.",
+    "A journey back to yourself.",
   ],
-  cta: "Enter the Room",
-  bottomLeft: ["Same Roots.", "Different Generations.", "Always Home."],
-  bottomRight: ["People. Places. Practices.", "You Belong Here."],
+  cta: "JOIN THE JOURNEY",
+  subCta: "STEP INTO YOUR INNER WORLD",
+  bottomLeft: ["Slow Down.", "Listen Within."],
+  bottomRight: ["Trust The Message.", "Return To You."],
 };
 
 export const PARCHMENT_WORDS = ["Honor", "Learn", "Heal", "Practice", "Remember", "Return"];

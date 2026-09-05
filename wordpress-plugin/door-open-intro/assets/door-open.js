@@ -192,20 +192,10 @@
   }
 
   function loadSize(src, cb) {
-    if (!src) { cb({ w: 1672, h: 941 }); return; }
     var img = new Image();
-    var called = false;
-    function done(w, h) {
-      if (called) return;
-      called = true;
-      cb({ w: w || 1672, h: h || 941 });
-    }
-    img.onload = function () { done(img.naturalWidth, img.naturalHeight); };
-    img.onerror = function () { done(1672, 941); };
+    img.onload = function () { cb({ w: img.naturalWidth, h: img.naturalHeight }); };
+    img.onerror = function () { cb({ w: 1672, h: 941 }); };
     img.src = src;
-    if (img.complete && img.naturalWidth > 0) {
-      done(img.naturalWidth, img.naturalHeight);
-    }
   }
 
   var easeInOut = function (t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
@@ -237,11 +227,11 @@
 
     document.body.classList.add('tar-locked');
 
-    var baseSrc = (base && (base.getAttribute('data-src') || (base.style.backgroundImage || '').replace(/url\(['"]?(.*?)['"]?\)/, '$1'))) || cfg.doorImageUrl || '';
-    var roomSrc = (room && (room.getAttribute('data-src') || (room.style.backgroundImage || '').replace(/url\(['"]?(.*?)['"]?\)/, '$1'))) || cfg.roomImageUrl || '';
+    var baseSrc = (base && base.getAttribute('data-src')) || cfg.doorImageUrl || '';
+    var roomSrc = (room && room.getAttribute('data-src')) || cfg.roomImageUrl || '';
 
-    if (base && baseSrc) base.style.backgroundImage = 'url("' + baseSrc + '")';
-    if (room && roomSrc) room.style.backgroundImage = 'url("' + roomSrc + '")';
+    if (base) base.style.backgroundImage = 'url("' + baseSrc + '")';
+    if (room) room.style.backgroundImage = 'url("' + roomSrc + '")';
 
     var pct = {
       l: parseFloat(root.getAttribute('data-door-left') || '35.0') / 100,
@@ -321,10 +311,10 @@
       document.body.classList.remove('tar-locked');
       document.body.classList.add('tar-arrived');
 
-      // Begin brisk dissolve of the room image into the store underneath
+      // Begin slow, velvety dissolve of the room image into the store underneath
       root.classList.add('is-dissolving');
 
-      // After 0.85s dissolve transition completes, finish navigation or cleanup
+      // After 2.0s dissolve transition completes, finish navigation or cleanup
       setTimeout(function () {
         root.classList.add('is-done');
         window.removeEventListener('resize', layout);
@@ -335,9 +325,9 @@
         } else {
           setTimeout(function () {
             if (root.parentNode) root.parentNode.removeChild(root);
-          }, 100);
+          }, 150);
         }
-      }, 850);
+      }, 2000);
     }
 
     function walkThrough() {
@@ -387,11 +377,11 @@
           if (clip) clip.style.clipPath = 'none';
           if (scene) scene.style.transform = 'scale(' + sEnd + ')';
 
-          // Linger briefly (250ms) so the visitor sees and enjoys the room interior,
-          // then swiftly & smoothly fade out (dissolve) into the store!
+          // Linger briefly (600ms) so the visitor sees and enjoys the room interior,
+          // then slowly and smoothly fade out (dissolve) into the store!
           setTimeout(function () {
             finish();
-          }, 250);
+          }, 600);
         }
       })(start);
     }
@@ -399,40 +389,33 @@
     function enter() {
       if (busy) return;
       busy = true;
-
-      // Play procedural 3D door audio chimes
-      if (Sound) Sound.swell();
-
+      Sound.swell();
       root.classList.add('is-leaving');
-
-      setTimeout(function () {
-        root.classList.add('is-open');
-        walkThrough();
-      }, 300);
+      setTimeout(function () { root.classList.add('is-open'); }, 250);
+      setTimeout(walkThrough, 250 + (reduceMotion ? 500 : 1500));
     }
+
+    $$('[data-tar-enter]', root).forEach(function (b) {
+      b.addEventListener('click', enter);
+    });
 
     function toggleSound() {
       Sound.enabled = !Sound.enabled;
       document.body.classList.toggle('tar-sound-on', Sound.enabled);
-      if (soundBtn) soundBtn.setAttribute('aria-pressed', Sound.enabled ? 'true' : 'false');
+      var sBtn = $('[data-tar-sound]', root);
+      if (sBtn) sBtn.setAttribute('aria-pressed', Sound.enabled ? 'true' : 'false');
     }
-
-    var enterBtn = $('[data-tar-enter]', root);
-    if (enterBtn) enterBtn.addEventListener('click', enter);
 
     var soundBtn = $('[data-tar-sound]', root);
     if (soundBtn) soundBtn.addEventListener('click', toggleSound);
 
-    // Escape key skips or closes
-    function onKey(e) {
-      if (e.key === 'Escape' || e.key === 'Enter') {
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !busy && root && !root.classList.contains('is-done')) {
         enter();
-        window.removeEventListener('keydown', onKey);
       }
-    }
-    window.addEventListener('keydown', onKey);
+    });
 
-    return { enter: enter, toggleSound: toggleSound };
+    return { enter: enter, layout: layout, toggleSound: toggleSound };
   }
 
   /* ------------------------------------------------------------------
@@ -514,8 +497,8 @@
           '</div>' +
         '</div>' +
         '<footer class="tar-threshold__foot">' +
-          '<p class="tar-smallcaps">Slow Down.<br>Listen Within.<br>Trust The Message.</p>' +
-          '<p class="tar-smallcaps tar-threshold__foot-right">Remember. Understand.<br>Integrate Your Dreams.<br>Return To You.</p>' +
+          '<p class="tar-smallcaps">Slow Down.<br>Listen Within.</p>' +
+          '<p class="tar-smallcaps tar-threshold__foot-right">Trust The Message.<br>Return To You.</p>' +
         '</footer>' +
       '</div>';
 

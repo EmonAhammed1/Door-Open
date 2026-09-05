@@ -114,22 +114,22 @@ body.tar-locked {
   color: var(--tar-cream);
   font-family: var(--tar-body);
   -webkit-font-smoothing: antialiased;
-  transition: opacity 0.85s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.85s;
+  transition: opacity 2.0s cubic-bezier(0.4, 0, 0.2, 1), visibility 2.0s;
   opacity: 1;
   visibility: visible;
 }
 
-/* Dissolve Phase: The room image softly & quickly fades out to reveal the store underneath */
+/* Dissolve Phase: The room image slowly & softly fades out to reveal the store underneath */
 .tar-threshold.is-dissolving {
   opacity: 0 !important;
   visibility: hidden;
   pointer-events: none !important;
-  transition: opacity 0.85s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.85s !important;
+  transition: opacity 2.0s cubic-bezier(0.4, 0, 0.2, 1), visibility 2.0s !important;
 }
 
 .tar-threshold.is-dissolving .tar-scene {
-  transform: scale(1.02);
-  transition: transform 0.85s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform: scale(1.03);
+  transition: transform 2.0s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .tar-threshold.is-done {
