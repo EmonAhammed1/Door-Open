@@ -1,5 +1,5 @@
 import { useState } from "react";
-import innerSanctuaryImg from "../../assets/drumi/inner-sanctuary.jpg";
+import pureLakeImg from "../../assets/drumi/pure-lake.jpg";
 import { DrumiFounderSection } from "./DrumiFounderSection";
 import { DrumiVisionAndCards } from "./DrumiVisionAndCards";
 import { DrumiFooterBar } from "./DrumiFooterBar";
@@ -91,7 +91,7 @@ export function DrumiInnerRoom({
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-100"
           style={{
-            backgroundImage: `url(${innerSanctuaryImg})`,
+            backgroundImage: `url(${pureLakeImg})`,
             backgroundPosition: "center 42%",
           }}
         >

@@ -1,6 +1,5 @@
 import { useRef, useEffect } from "react";
-import doorsClosedImg from "../../assets/drumi/doors-closed.jpg";
-import doorsOpenImg from "../../assets/drumi/doors-open.jpg";
+import pureLakeImg from "../../assets/drumi/pure-lake.jpg";
 import panelLeftImg from "../../assets/drumi/panel-left-clean.png";
 import panelRightImg from "../../assets/drumi/panel-right-clean.png";
 import frameSurroundImg from "../../assets/drumi/frame-surround-clean.png";
@@ -16,7 +15,7 @@ interface DrumiThresholdProps {
   onToggleSound: () => void;
 }
 
-// Exact fractions measured from 1376 x 768 architectural render
+// Exact doorway geometry in fractions of the 1376 x 768 frame
 const DOOR_GEOMETRY = {
   left: 380 / 1376,
   right: 996 / 1376,
@@ -26,7 +25,6 @@ const DOOR_GEOMETRY = {
 
 const ENTER_MS = 1400;
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 
 export function DrumiThreshold({
   phase,
@@ -37,13 +35,12 @@ export function DrumiThreshold({
 }: DrumiThresholdProps) {
   const stageRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
-  const baseRef = useRef<HTMLDivElement>(null);
-  const openBgRef = useRef<HTMLDivElement>(null);
-  const clipRef = useRef<HTMLDivElement>(null);
+  const lakeBgRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
   const panelsRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
 
-  const natural = useNaturalSize(doorsClosedImg);
+  const natural = useNaturalSize(pureLakeImg);
   const { w: cw, h: ch } = useElementSize(stageRef);
   const geo = natural && cw && ch ? computeCover(cw, ch, natural.w, natural.h) : null;
 
@@ -64,7 +61,7 @@ export function DrumiThreshold({
   const sizeRef = useRef({ cw, ch });
   sizeRef.current = { cw, ch };
 
-  // Smooth cinematic camera walk-through into the doorway
+  // Cinematic camera walk-through through the single archway
   useEffect(() => {
     if (phase !== "entering") return;
 
@@ -72,13 +69,11 @@ export function DrumiThreshold({
     const P = centerRef.current;
     const { cw: curW, ch: curH } = sizeRef.current;
     const scene = sceneRef.current;
-    const base = baseRef.current;
-    const openBg = openBgRef.current;
-    const clip = clipRef.current;
+    const frame = frameRef.current;
     const panels = panelsRef.current;
     const glow = glowRef.current;
 
-    if (!r || !scene || !base || !openBg || !clip || !panels || !glow) {
+    if (!r || !scene || !frame || !panels || !glow) {
       onArrived();
       return;
     }
@@ -90,36 +85,31 @@ export function DrumiThreshold({
       (curH - P.y) / Math.max(1, r.top + r.height - P.y)
     );
     const sEnd = Math.min(3.6, need * 1.05);
-    const inset0 = { t: r.top, rgt: curW - r.left - r.width, b: curH - r.top - r.height, l: r.left };
     const start = performance.now();
     let raf = 0;
 
-    const frame = (now: number) => {
+    const tick = (now: number) => {
       const t = Math.min(1, (now - start) / ENTER_MS);
       const e = easeInOut(t);
       const s = 1 + (sEnd - 1) * e;
-      const k = 1.25 - 0.25 * easeOut(t);
 
       scene.style.transform = `scale(${s})`;
-      openBg.style.transform = `scale(${k / s})`;
 
-      const shrink = 1 - easeOut(Math.min(1, t * 1.2));
-      clip.style.clipPath = `inset(${inset0.t * shrink}px ${inset0.rgt * shrink}px ${inset0.b * shrink}px ${inset0.l * shrink}px)`;
-
-      const op = String(1 - easeInOut(Math.min(1, t / 0.6)));
-      base.style.opacity = op;
+      // Fade out the surrounding wall and door panels as the camera crosses the threshold
+      const op = String(1 - easeInOut(Math.min(1, t / 0.65)));
+      frame.style.opacity = op;
       panels.style.opacity = op;
 
       glow.style.opacity = String(t < 0.4 ? 0.6 + 0.4 * (t / 0.4) : Math.max(0, 1 - (t - 0.4) / 0.6));
 
       if (t < 1) {
-        raf = requestAnimationFrame(frame);
+        raf = requestAnimationFrame(tick);
       } else {
         onArrived();
       }
     };
 
-    raf = requestAnimationFrame(frame);
+    raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [phase, onArrived]);
 
@@ -157,7 +147,7 @@ export function DrumiThreshold({
         </button>
       </div>
 
-      {/* Brand Header Typography - ALWAYS VISIBLE, NEVER CUT OFF */}
+      {/* Brand Header Typography - Centered & Crisp, NEVER Cut Off */}
       <div
         className={`absolute top-0 left-0 right-0 z-45 pt-6 sm:pt-8 pb-3 px-4 flex flex-col items-center text-center pointer-events-none transition-opacity duration-300 ${
           isOpen ? "opacity-0" : "opacity-100"
@@ -191,53 +181,27 @@ export function DrumiThreshold({
         className="relative w-full h-full origin-center transition-transform"
         style={{ transformOrigin: origin }}
       >
-        {/* 1. Base Layer: Closed Doors Artwork */}
+        {/* 1. Deepest Background: Pure Mountain Lake Sunset (NO ARCH, NO EXTRA FRAME) */}
         <div
-          ref={baseRef}
-          className="absolute inset-0 transition-opacity duration-500"
+          ref={lakeBgRef}
+          className="absolute inset-0"
           style={{
-            backgroundImage: `url(${doorsClosedImg})`,
+            backgroundImage: `url(${pureLakeImg})`,
             backgroundSize: geo ? `${geo.dispW}px ${geo.dispH}px` : "cover",
             backgroundPosition: geo ? `${geo.offX}px ${geo.offY}px` : "center",
           }}
         />
 
-        {/* 2. Open Door Lake Sanctuary View (Clipped to Doorway Opening) */}
-        <div
-          ref={clipRef}
-          className="absolute inset-0 pointer-events-none"
-          style={
-            rect
-              ? {
-                  clipPath: `inset(${rect.top}px ${cw - rect.left - rect.width}px ${ch - rect.top - rect.height}px ${rect.left}px)`,
-                }
-              : undefined
-          }
-        >
-          {/* This is the 100% clean open archway with NO DOORS AT ALL */}
-          <div
-            ref={openBgRef}
-            className="absolute inset-0 transition-transform"
-            style={{
-              backgroundImage: `url(${doorsOpenImg})`,
-              backgroundSize: geo ? `${geo.dispW}px ${geo.dispH}px` : "cover",
-              backgroundPosition: geo ? `${geo.offX}px ${geo.offY}px` : "center",
-              transformOrigin: origin,
-              transform: "scale(1.2)",
-            }}
-          />
-        </div>
-
-        {/* 3. Mathematical Arched Door Panels (3D Rotate Y) */}
+        {/* 2. 3D Mathematical Arched Door Panels */}
         {rect && geo && (
-          <div ref={panelsRef} className="absolute inset-0 pointer-events-none">
-            {/* Left Door Panel - Swings open completely and fades out so NO DOOR IS VISIBLE */}
+          <div ref={panelsRef} className="absolute inset-0 pointer-events-none z-10">
+            {/* Left Door Panel */}
             <div
               className="absolute transition-all duration-[1200ms] cubic-bezier(0.25, 1, 0.5, 1)"
               style={{
                 left: rect.left,
                 top: rect.top,
-                width: rect.width / 2 + 0.5,
+                width: rect.width / 2 + 1,
                 height: rect.height,
                 transformOrigin: "left center",
                 transform: isOpen ? "rotateY(-115deg) scaleX(0.85)" : "rotateY(0deg)",
@@ -252,13 +216,13 @@ export function DrumiThreshold({
               />
             </div>
 
-            {/* Right Door Panel - Swings open completely and fades out so NO DOOR IS VISIBLE */}
+            {/* Right Door Panel */}
             <div
               className="absolute transition-all duration-[1200ms] cubic-bezier(0.25, 1, 0.5, 1)"
               style={{
-                left: rect.left + rect.width / 2 - 0.5,
+                left: rect.left + rect.width / 2 - 1,
                 top: rect.top,
-                width: rect.width / 2 + 0.5,
+                width: rect.width / 2 + 1,
                 height: rect.height,
                 transformOrigin: "right center",
                 transform: isOpen ? "rotateY(115deg) scaleX(0.85)" : "rotateY(0deg)",
@@ -275,9 +239,10 @@ export function DrumiThreshold({
           </div>
         )}
 
-        {/* 4. Frame Surround (Wall, potted olive tree, sheer curtains, floor) */}
+        {/* 3. The Single Architectural Stone Archway Frame (Walls, olive tree, curtains, floor) */}
         <div
-          className="absolute inset-0 pointer-events-none"
+          ref={frameRef}
+          className="absolute inset-0 pointer-events-none z-20 transition-opacity duration-500"
           style={{
             backgroundImage: `url(${frameSurroundImg})`,
             backgroundSize: geo ? `${geo.dispW}px ${geo.dispH}px` : "cover",
@@ -285,7 +250,7 @@ export function DrumiThreshold({
           }}
         />
 
-        {/* 5. CTA Button in front of the Door Threshold */}
+        {/* 4. CTA Button (Join the Journey) */}
         <div
           className={`absolute bottom-[5%] sm:bottom-[6%] left-0 right-0 flex flex-col items-center justify-center z-40 transition-all duration-300 ${
             isOpen ? "opacity-0 pointer-events-none scale-95" : "opacity-100 pointer-events-auto"
