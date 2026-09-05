@@ -110,39 +110,38 @@ body.tar-body,
 
 /* ---------- 5. Buttons & links ---------- */
 .tar-btn {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.9em;
-  font-family: var(--tar-display);
-  text-transform: uppercase;
-  letter-spacing: 0.32em;
-  font-size: 0.78rem;
-  color: var(--tar-cream);
-  padding: 1.05rem 2.6rem 1.05rem 2.9rem;
-  border: 1px solid rgba(201, 166, 107, 0.75);
-  background: rgba(10, 8, 6, 0.35);
-  backdrop-filter: blur(2px);
-  overflow: hidden;
-  text-decoration: none;
-  transition: color 0.5s, border-color 0.5s, box-shadow 0.6s, transform 0.4s var(--tar-ease-out);
-}
-.tar-btn::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(100deg, #c9a66b, #e8d5a3 55%, #c9a66b);
-  transform: translateX(-101%);
-  transition: transform 0.6s var(--tar-ease-out);
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-family: var(--tar-display), 'Cinzel', serif !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.26em !important;
+  font-size: 0.84rem !important;
+  font-weight: 500 !important;
+  color: #ffffff !important;
+  padding: 16px 48px !important;
+  min-width: 210px !important;
+  border: 1px solid rgba(215, 185, 180, 0.5) !important;
+  background-color: #9a7470 !important;
+  background: #9a7470 !important;
+  border-radius: 4px !important;
+  overflow: hidden !important;
+  text-decoration: none !important;
+  box-shadow: 0 8px 26px rgba(80, 45, 45, 0.38) !important;
+  cursor: pointer !important;
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease !important;
 }
 .tar-btn > * { position: relative; }
 .tar-btn:hover,
 .tar-btn:focus-visible {
-  color: #1a120a;
-  border-color: #e8d5a3;
-  box-shadow: 0 0 40px rgba(224, 138, 60, 0.35), 0 0 90px rgba(224, 138, 60, 0.15);
-  transform: translateY(-1px);
-  outline: none;
+  color: #ffffff !important;
+  background-color: #86615d !important;
+  background: #86615d !important;
+  border-color: rgba(235, 205, 200, 0.75) !important;
+  box-shadow: 0 10px 32px rgba(90, 50, 50, 0.5) !important;
+  transform: translateY(-2px) !important;
+  outline: none !important;
 }
 .tar-btn:hover::before,
 .tar-btn:focus-visible::before { transform: translateX(0); }

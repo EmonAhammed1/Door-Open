@@ -481,61 +481,93 @@ body.tar-sound-on [data-tar-sound] {
   justify-content: center;
 }
 
-/* Image 3 Dusty-Rose Button */
+/* Image 3 Dusty-Rose Button - GUARANTEED OPAQUE SOLID & PADDED */
+#tar-threshold .tar-btn,
+#tar-threshold button.tar-btn,
+.tar-threshold .tar-btn,
+.tar-threshold button.tar-btn,
+.doi-widget-button-wrap .doi-btn,
+.doi-widget-button-wrap button.doi-btn,
 .tar-btn,
 .doi-btn {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--tar-display);
-  text-transform: uppercase;
-  letter-spacing: 0.24em;
-  font-size: clamp(0.78rem, 1vw, 0.86rem);
-  font-weight: 500;
-  color: #ffffff;
-  padding: 15px 44px;
-  background: #9a7470;
-  border: 1px solid rgba(215, 185, 180, 0.45);
-  border-radius: 4px;
-  overflow: hidden;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, transform 0.25s ease;
-  box-shadow: 0 8px 24px rgba(80, 45, 45, 0.32), 0 2px 6px rgba(0, 0, 0, 0.25);
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-family: var(--tar-display), 'Cinzel', serif !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.26em !important;
+  font-size: clamp(0.78rem, 1vw, 0.88rem) !important;
+  font-weight: 500 !important;
+  color: #ffffff !important;
+  padding: 16px 48px !important;
+  min-width: 210px !important;
+  background-color: #9a7470 !important;
+  background: #9a7470 !important;
+  border: 1px solid rgba(215, 185, 180, 0.5) !important;
+  border-radius: 4px !important;
+  overflow: hidden !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  box-shadow: 0 8px 26px rgba(80, 45, 45, 0.38), 0 2px 6px rgba(0, 0, 0, 0.25) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  outline: none !important;
+  line-height: 1.2 !important;
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease !important;
 }
 
+#tar-threshold .tar-btn span,
+#tar-threshold button.tar-btn span,
+.tar-btn span,
+.doi-btn span {
+  color: #ffffff !important;
+  font-family: inherit !important;
+  letter-spacing: inherit !important;
+  font-weight: inherit !important;
+  text-transform: uppercase !important;
+  display: inline-block !important;
+}
+
+#tar-threshold .tar-btn:hover,
+#tar-threshold button.tar-btn:hover,
 .tar-btn:hover,
-.tar-btn:focus-visible,
-.doi-btn:hover,
-.doi-btn:focus-visible {
-  background: #86615d;
-  border-color: rgba(235, 205, 200, 0.65);
-  box-shadow: 0 10px 30px rgba(90, 50, 50, 0.48), 0 0 20px rgba(154, 116, 112, 0.35);
-  transform: translateY(-2px);
-  color: #ffffff;
-  outline: none;
+.doi-btn:hover {
+  background-color: #86615d !important;
+  background: #86615d !important;
+  border-color: rgba(235, 205, 200, 0.75) !important;
+  box-shadow: 0 10px 32px rgba(90, 50, 50, 0.5), 0 0 20px rgba(154, 116, 112, 0.4) !important;
+  transform: translateY(-2px) !important;
+  color: #ffffff !important;
 }
 
+#tar-threshold .tar-btn:active,
+#tar-threshold button.tar-btn:active,
 .tar-btn:active,
 .doi-btn:active {
-  transform: translateY(0) scale(0.98);
+  transform: translateY(0) scale(0.98) !important;
 }
 
 /* Sub-caption under button: STEP INTO YOUR INNER WORLD */
+#tar-threshold .tar-btn-sub,
+.tar-threshold .tar-btn-sub,
+.doi-widget-button-wrap .doi-btn-sub,
 .tar-btn-sub,
 .doi-btn-sub {
-  display: block;
-  margin-top: 12px;
-  font-family: var(--tar-display);
-  font-size: clamp(0.6rem, 0.8vw, 0.7rem);
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  font-weight: 500;
-  color: rgba(220, 205, 190, 0.8);
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
-  text-align: center;
-  pointer-events: none;
+  display: block !important;
+  margin-top: 13px !important;
+  font-family: var(--tar-display), 'Cinzel', serif !important;
+  font-size: clamp(0.62rem, 0.8vw, 0.72rem) !important;
+  letter-spacing: 0.32em !important;
+  text-transform: uppercase !important;
+  font-weight: 500 !important;
+  color: rgba(225, 210, 195, 0.88) !important;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.85) !important;
+  text-align: center !important;
+  pointer-events: none !important;
+  opacity: 1 !important;
 }
 
 /* Footer of threshold */

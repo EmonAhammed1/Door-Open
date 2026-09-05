@@ -489,10 +489,10 @@
               '<p>A journey back to yourself.</p>' +
             '</div>' +
             '<div class="tar-btn-container">' +
-              '<button class="tar-btn" type="button" data-tar-enter>' +
-                '<span>' + btnText + '</span>' +
+              '<button class="tar-btn" type="button" data-tar-enter style="background-color: #9a7470 !important; background: #9a7470 !important; color: #ffffff !important; padding: 16px 48px !important; border: 1px solid rgba(215, 185, 180, 0.5) !important; border-radius: 4px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; text-decoration: none !important; box-shadow: 0 8px 26px rgba(80, 45, 45, 0.38) !important; font-family: \'Cinzel\', serif !important; font-size: 14px !important; letter-spacing: 0.26em !important; text-transform: uppercase !important; font-weight: 500 !important; line-height: 1.2 !important; cursor: pointer !important; opacity: 1 !important; visibility: visible !important;">' +
+                '<span style="color: #ffffff !important; font-family: inherit !important; letter-spacing: inherit !important; font-weight: inherit !important; text-transform: uppercase !important;">' + btnText + '</span>' +
               '</button>' +
-              '<span class="tar-btn-sub">STEP INTO YOUR INNER WORLD</span>' +
+              '<span class="tar-btn-sub" style="display: block !important; margin-top: 13px !important; font-family: \'Cinzel\', serif !important; font-size: 11px !important; letter-spacing: 0.32em !important; text-transform: uppercase !important; font-weight: 500 !important; color: rgba(225, 210, 195, 0.88) !important; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.85) !important; text-align: center !important;">STEP INTO YOUR INNER WORLD</span>' +
             '</div>' +
           '</div>' +
         '</div>' +
