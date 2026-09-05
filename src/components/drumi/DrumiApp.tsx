@@ -9,8 +9,7 @@ interface DrumiAppProps {
   onSwitchToAncestors?: () => void;
 }
 
-const TEXT_FADE_MS = 250;
-const DOOR_OPEN_MS = 1500;
+
 
 export function DrumiApp({ onSwitchToAncestors }: DrumiAppProps) {
   const [phase, setPhase] = useState<DrumiPhase>("idle");
@@ -22,22 +21,17 @@ export function DrumiApp({ onSwitchToAncestors }: DrumiAppProps) {
   const timers = useRef<number[]>([]);
 
   const handleEnter = useCallback(() => {
-    if (phase !== "idle" || enteringRef.current) return;
+    if (phase !== "idle") return;
     enteringRef.current = true;
     playDoorOpen();
-
-    timers.current.push(
-      window.setTimeout(() => {
-        setPhase("opening");
-      }, TEXT_FADE_MS)
-    );
-
-    timers.current.push(
-      window.setTimeout(() => {
-        setPhase("entering");
-      }, TEXT_FADE_MS + DOOR_OPEN_MS)
-    );
+    setPhase("opening");
   }, [phase, playDoorOpen]);
+
+  const handleCloseDoors = useCallback(() => {
+    playChime(440);
+    enteringRef.current = false;
+    setPhase("idle");
+  }, [playChime]);
 
   const handleArrived = useCallback(() => {
     setPhase("inside");
@@ -160,13 +154,14 @@ export function DrumiApp({ onSwitchToAncestors }: DrumiAppProps) {
         </div>
       )}
 
-      {/* Phase 1 & 2: Full-Width Threshold / 3D Door Open Walk-Through */}
+      {/* Phase 1 & 2: Full-Width Threshold / 3D Door Open */}
       {phase !== "inside" && (
         <DrumiThreshold
           phase={phase}
           soundOn={soundOn}
           onEnter={handleEnter}
           onArrived={handleArrived}
+          onCloseDoors={handleCloseDoors}
           onToggleSound={toggleSound}
         />
       )}
