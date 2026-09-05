@@ -134,10 +134,11 @@ function doi_site_intro_overlay() {
 }
 
 // ─── TOGGLE 2: Widget/Shortcode ───────────────────────────────────────────────
+// Always register shortcodes — the render function checks widget_enabled at render time.
+// This ensures shortcodes work even if the toggle is enabled AFTER a page is cached.
 add_action( 'init', 'doi_register_shortcode' );
 function doi_register_shortcode() {
-    if ( ! doi_get( 'widget_enabled' ) ) return;
-    add_shortcode( 'door_open', 'doi_shortcode_render' );
+    add_shortcode( 'door_open',       'doi_shortcode_render' );
     add_shortcode( 'door_open_intro', 'doi_shortcode_render' ); // alias
 }
 
@@ -149,11 +150,20 @@ function doi_register_shortcode() {
  *                     bg   — overlay background (default transparent)
  */
 function doi_shortcode_render( $atts ) {
-    if ( ! doi_get( 'widget_enabled' ) ) return '';
+    // Show a hint in admin view, return nothing in widget-disabled mode on frontend
+    if ( ! doi_get( 'widget_enabled' ) ) {
+        if ( current_user_can( 'edit_posts' ) ) {
+            return '<p style="background:#fff3cd;color:#856404;padding:8px 12px;border-radius:4px;font-size:0.8em;display:inline-block;">
+                    ⚠️ <strong>[door_open]</strong>: Enable <em>Widget / Shortcode Mode</em> in
+                    <a href="' . admin_url('options-general.php?page=door-open-intro') . '">Door Open Intro settings</a> to activate this shortcode.
+                    </p>';
+        }
+        return '';
+    }
 
     $overlay_file = DOI_PLUGIN_DIR . 'door-overlay/overlay.html';
     if ( ! file_exists( $overlay_file ) ) {
-        return '<p style="color:red;font-size:0.8em;">[door_open] — overlay.html not installed. See plugin settings.</p>';
+        return '<p style="color:#c62828;font-size:0.8em;">[door_open] — overlay.html not installed. See <a href="' . admin_url('options-general.php?page=door-open-intro') . '">plugin settings</a>.</p>';
     }
 
     $atts = shortcode_atts([
@@ -162,137 +172,218 @@ function doi_shortcode_render( $atts ) {
         'bg'   => 'transparent',
     ], $atts, 'door_open' );
 
-    $id  = 'doi-widget-' . wp_generate_uuid4();
+    // Unique ID so multiple shortcodes on the same page don't conflict
+    static $doi_instance = 0;
+    $doi_instance++;
+    $id  = 'doi-btn-' . $doi_instance;
     $src = doi_overlay_src( 'click', esc_url( $atts['url'] ) );
 
     ob_start();
     ?>
-    <div class="doi-widget" id="<?php echo esc_attr( $id ); ?>">
-      <!-- Door Open Widget Button -->
-      <button
-        type="button"
-        class="doi-widget__btn"
-        data-src="<?php echo esc_attr( $src ); ?>"
-        data-bg="<?php echo esc_attr( $atts['bg'] ); ?>"
-      >
-        <span class="doi-widget__label"><?php echo esc_html( $atts['text'] ); ?></span>
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-          <path d="M4 10H16M16 10L11 5M16 10L11 15"/>
-        </svg>
-      </button>
-    </div>
+<div class="doi-widget" id="<?php echo esc_attr( $id ); ?>-wrap">
 
-    <style>
-    .doi-widget { display: inline-block; }
-    .doi-widget__btn {
-      display: inline-flex; align-items: center; gap: 10px;
-      padding: 14px 32px;
-      border-radius: 999px;
-      background: #9a7470;
-      color: #fbf7f4;
-      font-family: 'Cinzel', serif;
-      font-size: 0.8rem;
-      letter-spacing: 0.28em;
-      text-transform: uppercase;
-      font-weight: 500;
-      border: 1.5px solid rgba(196,162,159,0.5);
-      cursor: pointer;
-      box-shadow: 0 8px 32px rgba(100,55,50,0.4), 0 2px 8px rgba(0,0,0,0.15);
-      transition: background 0.25s ease, transform 0.15s ease, box-shadow 0.25s ease;
-      position: relative;
-      overflow: hidden;
+  <button
+    type="button"
+    id="<?php echo esc_attr( $id ); ?>"
+    class="doi-widget__btn"
+    data-doi-src="<?php echo esc_attr( $src ); ?>"
+    data-doi-bg="<?php echo esc_attr( $atts['bg'] ); ?>"
+    onclick="doiOpenOverlay(this)"
+  >
+    <span class="doi-widget__label"><?php echo esc_html( $atts['text'] ); ?></span>
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" style="width:16px;height:16px;flex-shrink:0;">
+      <path d="M4 10H16M16 10L11 5M16 10L11 15"/>
+    </svg>
+  </button>
+
+</div>
+
+<?php if ( $doi_instance === 1 ): // Output shared CSS + JS only once per page ?>
+<style id="doi-widget-styles">
+.doi-widget { display: inline-block; }
+.doi-widget__btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 32px;
+  border-radius: 999px;
+  background: #9a7470;
+  color: #fbf7f4;
+  font-family: 'Cinzel', serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-weight: 500;
+  border: 1.5px solid rgba(196,162,159,0.5);
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(100,55,50,0.4), 0 2px 8px rgba(0,0,0,0.15);
+  transition: background 0.25s ease, transform 0.15s ease, box-shadow 0.25s ease;
+  position: relative; overflow: hidden;
+}
+.doi-widget__btn:hover { background: #7f5e5b; box-shadow: 0 12px 40px rgba(100,55,50,0.5); }
+.doi-widget__btn:active { transform: scale(0.97); }
+/* Full-screen overlay */
+#doi-fullscreen-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  width: 100vw; height: 100vh;
+  z-index: 999999;
+  background: transparent;
+  opacity: 1;
+  transition: opacity 1.1s cubic-bezier(0.4,0,0.2,1);
+}
+#doi-fullscreen-overlay.doi--visible { display: block; }
+#doi-fullscreen-overlay.doi--fading { opacity: 0; pointer-events: none; }
+#doi-fullscreen-overlay iframe {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  border: none; background: transparent;
+}
+</style>
+
+<!-- Door Open Intro: shared overlay element (created once, reused) -->
+<div id="doi-fullscreen-overlay" role="dialog" aria-label="Door animation" aria-hidden="true">
+  <iframe
+    id="doi-fullscreen-iframe"
+    title="Welcome animation"
+    allow="autoplay"
+    allowtransparency="true"
+    scrolling="no"
+    frameborder="0"
+  ></iframe>
+</div>
+
+<script>
+/* Door Open Intro — widget click handler (self-contained, no external deps) */
+function doiOpenOverlay(btn) {
+  var src     = btn.getAttribute('data-doi-src');
+  var bg      = btn.getAttribute('data-doi-bg') || 'transparent';
+  var overlay = document.getElementById('doi-fullscreen-overlay');
+  var iframe  = document.getElementById('doi-fullscreen-iframe');
+  if (!overlay || !iframe || !src) { console.warn('[door_open] Missing overlay elements or src'); return; }
+
+  // Set iframe src fresh each time (triggers reload/auto-start)
+  iframe.src = src;
+  overlay.style.background = bg;
+  overlay.setAttribute('aria-hidden', 'false');
+  overlay.classList.add('doi--visible');
+  overlay.classList.remove('doi--fading');
+  document.body.style.overflow = 'hidden';
+
+  var done = false;
+  function dismiss() {
+    if (done) return; done = true;
+    document.body.style.overflow = '';
+    overlay.classList.add('doi--fading');
+    overlay.setAttribute('aria-hidden', 'true');
+    setTimeout(function() {
+      overlay.classList.remove('doi--visible', 'doi--fading');
+      iframe.src = ''; // reset so next click replays from scratch
+    }, 1200);
+  }
+
+  // Listen for animation-done message from iframe
+  function msgHandler(e) {
+    if (e.data && e.data.type === 'door-animation-done') {
+      window.removeEventListener('message', msgHandler);
+      dismiss();
     }
-    .doi-widget__btn:hover {
-      background: #7f5e5b;
-      box-shadow: 0 12px 40px rgba(100,55,50,0.5);
+  }
+  window.addEventListener('message', msgHandler);
+
+  // Safety: dismiss after 16s max
+  var safety = setTimeout(dismiss, 16000);
+
+  // ESC key to skip
+  function onKey(e) {
+    if (e.key === 'Escape') {
+      clearTimeout(safety);
+      window.removeEventListener('message', msgHandler);
+      document.removeEventListener('keydown', onKey);
+      dismiss();
     }
-    .doi-widget__btn:active { transform: scale(0.97); }
-    .doi-widget__btn svg { width: 16px; height: 16px; flex-shrink: 0; }
-    /* Full-screen overlay created by JS */
-    .doi-fullscreen-overlay {
-      position: fixed; inset: 0;
-      width: 100vw; height: 100vh;
-      z-index: 999999;
-      transition: opacity 1.1s cubic-bezier(0.4,0,0.2,1), visibility 1.1s;
-      opacity: 1; visibility: visible;
-    }
-    .doi-fullscreen-overlay.doi--fading {
-      opacity: 0; visibility: hidden; pointer-events: none;
-    }
-    .doi-fullscreen-overlay iframe {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%;
-      border: none; background: transparent;
-    }
-    </style>
+  }
+  document.addEventListener('keydown', onKey);
+}
+</script>
+<?php endif; ?>
     <?php
     return ob_get_clean();
 }
 
-// ─── Widget JS (once per page, only if widget mode on) ────────────────────────
-add_action( 'wp_footer', 'doi_widget_js', 99 );
-function doi_widget_js() {
+// ─── Widget JS removed — now embedded directly in shortcode output (self-contained) ─────
+// This ensures it works with ALL page builders, themes, and maintenance plugins.
+// The doiOpenOverlay() function is only output when [door_open] shortcode is used.
+
+// ─── (Keeping only the wp_footer hook for backward-compat widget support) ──────────────
+add_action( 'wp_footer', 'doi_widget_js_compat', 99 );
+function doi_widget_js_compat() {
     if ( is_admin() ) return;
     if ( ! doi_get( 'widget_enabled' ) ) return;
+    // Only output if doiOpenOverlay wasn't already defined by a shortcode on this page
     ?>
     <script id="doi-widget-js">
-    (function(){
-      document.addEventListener('click', function(e) {
-        var btn = e.target.closest('.doi-widget__btn');
-        if (!btn) return;
-        e.preventDefault();
+    /* Fallback: define doiOpenOverlay if shortcode wasn't used on this page
+       (e.g. the button came from a classic WP widget) */
+    if (typeof window.doiOpenOverlay === 'undefined') {
+      // Inject the shared overlay DOM if not already present
+      if (!document.getElementById('doi-fullscreen-overlay')) {
+        var _ov = document.createElement('div');
+        _ov.id = 'doi-fullscreen-overlay';
+        _ov.setAttribute('role','dialog');
+        _ov.setAttribute('aria-label','Door animation');
+        _ov.setAttribute('aria-hidden','true');
+        _ov.style.cssText = 'display:none;position:fixed;inset:0;width:100vw;height:100vh;z-index:999999;background:transparent;opacity:1;transition:opacity 1.1s cubic-bezier(0.4,0,0.2,1);';
+        var _ifr = document.createElement('iframe');
+        _ifr.id = 'doi-fullscreen-iframe';
+        _ifr.title = 'Welcome animation';
+        _ifr.allow = 'autoplay';
+        _ifr.setAttribute('allowtransparency','true');
+        _ifr.setAttribute('scrolling','no');
+        _ifr.setAttribute('frameborder','0');
+        _ifr.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;background:transparent;';
+        _ov.appendChild(_ifr);
+        document.body.appendChild(_ov);
+        var _st = document.createElement('style');
+        _st.textContent = '#doi-fullscreen-overlay.doi--visible{display:block}#doi-fullscreen-overlay.doi--fading{opacity:0;pointer-events:none}';
+        document.head.appendChild(_st);
+      }
 
-        var src = btn.getAttribute('data-src');
-        var bg  = btn.getAttribute('data-bg') || 'transparent';
-        if (!src) return;
-
-        // Build full-screen overlay
-        var overlay = document.createElement('div');
-        overlay.className = 'doi-fullscreen-overlay';
-        overlay.style.background = bg;
-        overlay.setAttribute('role', 'dialog');
-        overlay.setAttribute('aria-label', 'Welcome animation');
-
-        var iframe = document.createElement('iframe');
+      window.doiOpenOverlay = function(btn) {
+        var src     = btn.getAttribute('data-doi-src') || btn.getAttribute('data-src');
+        var bg      = btn.getAttribute('data-doi-bg')  || btn.getAttribute('data-bg') || 'transparent';
+        var overlay = document.getElementById('doi-fullscreen-overlay');
+        var iframe  = document.getElementById('doi-fullscreen-iframe');
+        if (!overlay || !iframe || !src) return;
         iframe.src = src;
-        iframe.title = 'Welcome';
-        iframe.allow = 'autoplay';
-        iframe.setAttribute('allowtransparency', 'true');
-        iframe.setAttribute('scrolling', 'no');
-        iframe.setAttribute('frameborder', '0');
-        iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;background:transparent;';
-        overlay.appendChild(iframe);
-        document.body.appendChild(overlay);
+        overlay.style.background = bg;
+        overlay.setAttribute('aria-hidden','false');
+        overlay.classList.add('doi--visible');
+        overlay.classList.remove('doi--fading');
         document.body.style.overflow = 'hidden';
-
         var done = false;
         function dismiss() {
           if (done) return; done = true;
           document.body.style.overflow = '';
           overlay.classList.add('doi--fading');
-          setTimeout(function(){ overlay.remove(); }, 1200);
+          overlay.setAttribute('aria-hidden','true');
+          setTimeout(function(){ overlay.classList.remove('doi--visible','doi--fading'); iframe.src=''; }, 1200);
         }
+        function msgH(e){ if(e.data&&e.data.type==='door-animation-done'){window.removeEventListener('message',msgH);dismiss();} }
+        window.addEventListener('message', msgH);
+        var t = setTimeout(dismiss, 16000);
+        function onK(e){ if(e.key==='Escape'){clearTimeout(t);window.removeEventListener('message',msgH);document.removeEventListener('keydown',onK);dismiss();} }
+        document.addEventListener('keydown', onK);
+      };
 
-        window.addEventListener('message', function handler(e) {
-          if (e.data && e.data.type === 'door-animation-done') {
-            window.removeEventListener('message', handler);
-            dismiss();
-          }
-        });
-
-        // Safety timeout
-        setTimeout(dismiss, 16000);
-
-        // ESC to close
-        function onKey(e) {
-          if (e.key === 'Escape') { dismiss(); document.removeEventListener('keydown', onKey); }
-        }
-        document.addEventListener('keydown', onKey);
+      // Also support old data-src attribute (event delegation fallback)
+      document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.doi-widget__btn');
+        if (btn && !btn.getAttribute('onclick')) window.doiOpenOverlay(btn);
       });
-    })();
+    }
     </script>
     <?php
 }
+
 
 // ─── Register Widget (classic WP sidebar widget) ──────────────────────────────
 add_action( 'widgets_init', 'doi_register_widget' );
