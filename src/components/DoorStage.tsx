@@ -118,13 +118,13 @@ export function DoorStage({ phase, onArrived }: DoorStageProps) {
       } else {
         setTimeout(() => {
           if (stageRef.current) {
-            stageRef.current.style.transition = "opacity 1800ms cubic-bezier(0.4, 0, 0.2, 1)";
+            stageRef.current.style.transition = "opacity 800ms cubic-bezier(0.4, 0, 0.2, 1)";
             stageRef.current.style.opacity = "0";
-            setTimeout(onArrived, 1800);
+            setTimeout(onArrived, 800);
           } else {
             onArrived();
           }
-        }, 600);
+        }, 250);
       }
     };
     raf = requestAnimationFrame(frame);

@@ -184,8 +184,8 @@ function doi_get_threshold_html( $args = [] ) {
         </div>
 
         <footer class="tar-threshold__foot">
-          <p class="tar-smallcaps">Same Roots.<br>Different Generations.<br>Always Home.</p>
-          <p class="tar-smallcaps tar-threshold__foot-right">People. Places. Practices.<br>You Belong Here.</p>
+          <p class="tar-smallcaps">Slow Down.<br>Listen Within.<br>Trust The Message.</p>
+          <p class="tar-smallcaps tar-threshold__foot-right">Remember. Understand.<br>Integrate Your Dreams.<br>Return To You.</p>
         </footer>
       </div>
     </section>

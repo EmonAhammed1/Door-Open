@@ -18,8 +18,8 @@ export const THRESHOLD = {
   ],
   cta: "JOIN THE JOURNEY",
   subCta: "STEP INTO YOUR INNER WORLD",
-  bottomLeft: ["Slow Down.", "Listen Within."],
-  bottomRight: ["Trust The Message.", "Return To You."],
+  bottomLeft: ["Slow Down.", "Listen Within.", "Trust The Message."],
+  bottomRight: ["Remember. Understand.", "Integrate Your Dreams.", "Return To You."],
 };
 
 export const PARCHMENT_WORDS = ["Honor", "Learn", "Heal", "Practice", "Remember", "Return"];
