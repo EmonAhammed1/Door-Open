@@ -113,9 +113,19 @@ export function DoorStage({ phase, onArrived }: DoorStageProps) {
       panels.style.opacity = op;
       if (lintel) lintel.style.opacity = op;
       glow.style.opacity = String(t < 0.4 ? 0.55 + 0.45 * (t / 0.4) : Math.max(0, 1 - (t - 0.4) / 0.6));
-      inner.style.filter = `brightness(${1.15 - 0.15 * easeOut(t)}) saturate(1.05)`;
-      if (t < 1) raf = requestAnimationFrame(frame);
-      else onArrived();
+      if (t < 1) {
+        raf = requestAnimationFrame(frame);
+      } else {
+        setTimeout(() => {
+          if (stageRef.current) {
+            stageRef.current.style.transition = "opacity 1800ms cubic-bezier(0.4, 0, 0.2, 1)";
+            stageRef.current.style.opacity = "0";
+            setTimeout(onArrived, 1800);
+          } else {
+            onArrived();
+          }
+        }, 600);
+      }
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);

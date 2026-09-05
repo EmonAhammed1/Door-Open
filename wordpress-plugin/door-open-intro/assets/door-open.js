@@ -306,20 +306,28 @@
       if (skipKey) {
         try { sessionStorage.setItem(skipKey, '1'); } catch (e) {}
       }
+
+      // Unlock scrolling & signal arrival so page animations under the overlay can start
       document.body.classList.remove('tar-locked');
       document.body.classList.add('tar-arrived');
-      root.classList.add('is-done');
-      window.removeEventListener('resize', layout);
 
-      var dest = root.getAttribute('data-home-url');
-      if (dest && dest.trim() !== '' && dest !== '#' && dest !== window.location.pathname && dest !== window.location.href) {
-        window.location.href = dest;
-      } else {
-        // Single-page setup: smoothly remove overlay so visitor can interact with site
-        setTimeout(function () {
-          if (root.parentNode) root.parentNode.removeChild(root);
-        }, 120);
-      }
+      // Begin slow, velvety dissolve of the room image into the store underneath
+      root.classList.add('is-dissolving');
+
+      // After 2.0s dissolve transition completes, finish navigation or cleanup
+      setTimeout(function () {
+        root.classList.add('is-done');
+        window.removeEventListener('resize', layout);
+
+        var dest = root.getAttribute('data-home-url');
+        if (dest && dest.trim() !== '' && dest !== '#' && dest !== window.location.pathname && dest !== window.location.href) {
+          window.location.href = dest;
+        } else {
+          setTimeout(function () {
+            if (root.parentNode) root.parentNode.removeChild(root);
+          }, 150);
+        }
+      }, 2000);
     }
 
     function walkThrough() {
@@ -365,7 +373,15 @@
         if (t < 1) {
           requestAnimationFrame(frame);
         } else {
-          finish();
+          // Camera has arrived fully into the room!
+          if (clip) clip.style.clipPath = 'none';
+          if (scene) scene.style.transform = 'scale(' + sEnd + ')';
+
+          // Linger briefly (600ms) so the visitor sees and enjoys the room interior,
+          // then slowly and smoothly fade out (dissolve) into the store!
+          setTimeout(function () {
+            finish();
+          }, 600);
         }
       })(start);
     }
