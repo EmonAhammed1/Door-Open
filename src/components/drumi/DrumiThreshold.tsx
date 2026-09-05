@@ -1,5 +1,5 @@
 import { useRef, useEffect } from "react";
-import pureLakeImg from "../../assets/drumi/pure-lake.jpg";
+import innerSanctuaryImg from "../../assets/drumi/inner-sanctuary.jpg";
 import panelLeftImg from "../../assets/drumi/panel-left-clean.png";
 import panelRightImg from "../../assets/drumi/panel-right-clean.png";
 import frameSurroundImg from "../../assets/drumi/frame-surround-clean.png";
@@ -23,7 +23,7 @@ const DOOR_GEOMETRY = {
   bottom: 695 / 768,
 };
 
-const ENTER_MS = 1400;
+const ENTER_MS = 1300;
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 export function DrumiThreshold({
@@ -35,12 +35,12 @@ export function DrumiThreshold({
 }: DrumiThresholdProps) {
   const stageRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
-  const lakeBgRef = useRef<HTMLDivElement>(null);
+  const sanctuaryBgRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const panelsRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
 
-  const natural = useNaturalSize(pureLakeImg);
+  const natural = useNaturalSize(innerSanctuaryImg);
   const { w: cw, h: ch } = useElementSize(stageRef);
   const geo = natural && cw && ch ? computeCover(cw, ch, natural.w, natural.h) : null;
 
@@ -61,7 +61,7 @@ export function DrumiThreshold({
   const sizeRef = useRef({ cw, ch });
   sizeRef.current = { cw, ch };
 
-  // Cinematic camera walk-through through the single archway
+  // Cinematic camera glide through the doorway
   useEffect(() => {
     if (phase !== "entering") return;
 
@@ -84,7 +84,7 @@ export function DrumiThreshold({
       P.y / Math.max(1, P.y - r.top),
       (curH - P.y) / Math.max(1, r.top + r.height - P.y)
     );
-    const sEnd = Math.min(3.6, need * 1.05);
+    const sEnd = Math.min(3.2, need * 1.05);
     const start = performance.now();
     let raf = 0;
 
@@ -93,14 +93,15 @@ export function DrumiThreshold({
       const e = easeInOut(t);
       const s = 1 + (sEnd - 1) * e;
 
+      // Camera moves forward toward the inner sanctuary
       scene.style.transform = `scale(${s})`;
 
-      // Fade out the surrounding wall and door panels as the camera crosses the threshold
-      const op = String(1 - easeInOut(Math.min(1, t / 0.65)));
+      // Fade out the surrounding wall and door panels so they don't block the camera
+      const op = String(1 - easeInOut(Math.min(1, t / 0.55)));
       frame.style.opacity = op;
       panels.style.opacity = op;
 
-      glow.style.opacity = String(t < 0.4 ? 0.6 + 0.4 * (t / 0.4) : Math.max(0, 1 - (t - 0.4) / 0.6));
+      glow.style.opacity = String(t < 0.4 ? 0.5 + 0.5 * (t / 0.4) : Math.max(0, 1 - (t - 0.4) / 0.6));
 
       if (t < 1) {
         raf = requestAnimationFrame(tick);
@@ -181,32 +182,31 @@ export function DrumiThreshold({
         className="relative w-full h-full origin-center transition-transform"
         style={{ transformOrigin: origin }}
       >
-        {/* 1. Deepest Background: Pure Mountain Lake Sunset (NO ARCH, NO EXTRA FRAME) */}
+        {/* 1. Deepest Background: Inner Sanctuary Terrace (Seen through doorway) */}
         <div
-          ref={lakeBgRef}
+          ref={sanctuaryBgRef}
           className="absolute inset-0"
           style={{
-            backgroundImage: `url(${pureLakeImg})`,
+            backgroundImage: `url(${innerSanctuaryImg})`,
             backgroundSize: geo ? `${geo.dispW}px ${geo.dispH}px` : "cover",
             backgroundPosition: geo ? `${geo.offX}px ${geo.offY}px` : "center",
           }}
         />
 
-        {/* 2. 3D Mathematical Arched Door Panels */}
+        {/* 2. 3D Mathematical Arched Door Panels (Opens wide first!) */}
         {rect && geo && (
           <div ref={panelsRef} className="absolute inset-0 pointer-events-none z-10">
             {/* Left Door Panel */}
             <div
-              className="absolute transition-all duration-[1200ms] cubic-bezier(0.25, 1, 0.5, 1)"
+              className="absolute transition-all duration-[1100ms] cubic-bezier(0.25, 1, 0.5, 1)"
               style={{
                 left: rect.left,
                 top: rect.top,
                 width: rect.width / 2 + 1,
                 height: rect.height,
                 transformOrigin: "left center",
-                transform: isOpen ? "rotateY(-115deg) scaleX(0.85)" : "rotateY(0deg)",
-                opacity: isOpen ? 0 : 1,
-                filter: isOpen ? "brightness(0.5)" : "brightness(1)",
+                transform: isOpen ? "rotateY(-96deg) scaleX(0.9)" : "rotateY(0deg)",
+                filter: isOpen ? "brightness(0.65)" : "brightness(1)",
               }}
             >
               <img
@@ -218,16 +218,15 @@ export function DrumiThreshold({
 
             {/* Right Door Panel */}
             <div
-              className="absolute transition-all duration-[1200ms] cubic-bezier(0.25, 1, 0.5, 1)"
+              className="absolute transition-all duration-[1100ms] cubic-bezier(0.25, 1, 0.5, 1)"
               style={{
                 left: rect.left + rect.width / 2 - 1,
                 top: rect.top,
                 width: rect.width / 2 + 1,
                 height: rect.height,
                 transformOrigin: "right center",
-                transform: isOpen ? "rotateY(115deg) scaleX(0.85)" : "rotateY(0deg)",
-                opacity: isOpen ? 0 : 1,
-                filter: isOpen ? "brightness(0.5)" : "brightness(1)",
+                transform: isOpen ? "rotateY(96deg) scaleX(0.9)" : "rotateY(0deg)",
+                filter: isOpen ? "brightness(0.65)" : "brightness(1)",
               }}
             >
               <img

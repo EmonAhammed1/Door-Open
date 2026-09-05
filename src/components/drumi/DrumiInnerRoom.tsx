@@ -1,5 +1,5 @@
 import { useState } from "react";
-import pureLakeImg from "../../assets/drumi/pure-lake.jpg";
+import innerSanctuaryImg from "../../assets/drumi/inner-sanctuary.jpg";
 import { DrumiFounderSection } from "./DrumiFounderSection";
 import { DrumiVisionAndCards } from "./DrumiVisionAndCards";
 import { DrumiFooterBar } from "./DrumiFooterBar";
@@ -26,36 +26,36 @@ interface Hotspot {
 
 const HOTSPOTS: Hotspot[] = [
   {
-    id: "lake-view",
-    x: 48,
-    y: 52,
+    id: "lake-reflection",
+    x: 50,
+    y: 42,
     label: "Still Waters",
     kicker: "Lake of Reflection",
     blurb: "A mirror of the unconscious. When the surface of the mind calms, the deepest wisdom is reflected back without distortion.",
   },
   {
-    id: "altar-terrace",
-    x: 28,
-    y: 78,
+    id: "terrace-altar",
+    x: 18,
+    y: 72,
     label: "Morning Altar",
     kicker: "Grounding & Awakening",
-    blurb: "A sacred space to sit at daybreak with tea and ink, capturing the fragile memories of dreams before they dissolve into daylight.",
+    blurb: "A sacred space with olive trees and glowing lanterns to sit at daybreak, capturing the memories of dreams.",
   },
   {
-    id: "olive-grove",
-    x: 14,
-    y: 62,
-    label: "Living Roots",
-    kicker: "The Ancient Olive",
-    blurb: "Rooted deep into living limestone. A reminder that to reach into the infinite sky of dreaming, our roots must stay firmly grounded.",
-  },
-  {
-    id: "sanctuary-alcove",
-    x: 74,
-    y: 78,
-    label: "Sunset Seating",
+    id: "meditation-corner",
+    x: 82,
+    y: 74,
+    label: "Sanctuary Alcove",
     kicker: "The Evening Threshold",
-    blurb: "Soft linen cushions and gentle lanterns. Where the transition from waking to dreaming begins each evening.",
+    blurb: "Linen cushions and stone balustrades. Where the transition from waking to dreaming begins each evening.",
+  },
+  {
+    id: "tea-table",
+    x: 68,
+    y: 84,
+    label: "Quiet Reflection",
+    kicker: "Herbs & Journaling",
+    blurb: "A warm cup of herbal tea and open journal, resting in the golden sunset warmth of the terrace.",
   },
 ];
 
@@ -85,29 +85,29 @@ export function DrumiInnerRoom({
 
   return (
     <div className="w-full min-h-screen bg-[#ede6df] animate-fadeIn">
-      {/* 1. Full-Viewport Sanctuary Terrace Hero */}
+      {/* 1. Full-Viewport Sanctuary Terrace Hero (inner-sanctuary.jpg) */}
       <section className="relative w-full h-screen min-h-[640px] overflow-hidden select-none">
-        {/* Full-width Panoramic Background */}
+        {/* Luxury Stone Terrace with Pillars, Lanterns & Lake Background */}
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-100"
           style={{
-            backgroundImage: `url(${pureLakeImg})`,
-            backgroundPosition: "center 42%",
+            backgroundImage: `url(${innerSanctuaryImg})`,
+            backgroundPosition: "center center",
           }}
         >
-          {/* Subtle warm golden sunset glow */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-[#332219]/70" />
+          {/* Subtle warm golden ambient lighting */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-[#2b1f18]/65" />
         </div>
 
-        {/* Top Navigation Bar */}
-        <header className="absolute top-0 left-0 right-0 z-30 px-6 sm:px-12 py-6 flex items-center justify-between">
-          {/* Return to Entrance Button */}
+        {/* Top Navigation Bar with generous spacing (No overlapping buttons) */}
+        <header className="absolute top-0 left-0 right-0 z-30 px-6 sm:px-12 pt-6 sm:pt-8 flex items-center justify-between">
+          {/* Return to Entrance Button (Clean luxury pill button) */}
           <button
             type="button"
             onClick={onReturnToThreshold}
-            className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/40 bg-black/30 hover:bg-black/50 text-white/90 text-[11px] uppercase tracking-[0.2em] font-['Cinzel',serif] backdrop-blur-md transition-all shadow-md group"
+            className="flex items-center gap-2.5 px-5 py-2.5 rounded-full border border-white/45 bg-black/35 hover:bg-black/55 text-white text-[11px] uppercase tracking-[0.22em] font-['Cinzel',serif] backdrop-blur-md transition-all shadow-lg group cursor-pointer"
           >
-            <span className="transition-transform group-hover:-translate-x-1">←</span>
+            <span className="transition-transform group-hover:-translate-x-1 font-sans">←</span>
             <span>Return to Entrance</span>
           </button>
 
@@ -125,10 +125,10 @@ export function DrumiInnerRoom({
           <button
             type="button"
             onClick={onToggleSound}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-full border backdrop-blur-md text-[11px] uppercase tracking-[0.2em] font-['Cinzel',serif] transition-all shadow-md ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-full border backdrop-blur-md text-[11px] uppercase tracking-[0.2em] font-['Cinzel',serif] transition-all shadow-lg cursor-pointer ${
               soundOn
                 ? "bg-[#9a7470]/90 border-[#c4a9a6] text-white"
-                : "bg-black/30 border-white/40 text-white hover:bg-black/50"
+                : "bg-black/35 border-white/45 text-white hover:bg-black/55"
             }`}
           >
             <span className="relative flex h-2 w-2">
@@ -145,7 +145,7 @@ export function DrumiInnerRoom({
           </button>
         </header>
 
-        {/* Sanctuary Interactive Hotspots */}
+        {/* Interactive Sanctuary Hotspots */}
         {HOTSPOTS.map((h) => {
           const isActive = activeHotspot?.id === h.id;
           return (
@@ -157,21 +157,20 @@ export function DrumiInnerRoom({
               <button
                 type="button"
                 onClick={() => handleHotspotClick(h)}
-                className={`group relative flex items-center justify-center w-8 h-8 rounded-full border backdrop-blur-md transition-all duration-300 ${
+                className={`group relative flex items-center justify-center w-9 h-9 rounded-full border backdrop-blur-md transition-all duration-300 cursor-pointer ${
                   isActive
-                    ? "bg-white text-[#7d5653] border-white scale-110 shadow-[0_0_20px_rgba(255,255,255,0.8)]"
-                    : "bg-black/40 text-white border-white/60 hover:bg-white/90 hover:text-[#7d5653] hover:scale-105"
+                    ? "bg-white text-[#7d5653] border-white scale-110 shadow-[0_0_24px_rgba(255,255,255,0.9)]"
+                    : "bg-black/45 text-white border-white/70 hover:bg-white/90 hover:text-[#7d5653] hover:scale-105"
                 }`}
                 title={h.label}
               >
                 <span className="text-sm font-serif">✦</span>
-                {/* Expanding pulse ring */}
-                <span className="absolute inset-0 rounded-full border border-white/40 animate-ping pointer-events-none opacity-40" />
+                <span className="absolute inset-0 rounded-full border border-white/50 animate-ping pointer-events-none opacity-40" />
               </button>
 
               {/* Tooltip Card */}
               {isActive && (
-                <div className="absolute bottom-11 left-1/2 -translate-x-1/2 w-64 p-4 rounded bg-[#fdfaf7]/95 border border-[#dfd0c4] text-[#342921] shadow-2xl backdrop-blur-md z-40 animate-fadeIn text-left">
+                <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-64 p-4 rounded bg-[#fdfaf7]/95 border border-[#dfd0c4] text-[#342921] shadow-2xl backdrop-blur-md z-40 animate-fadeIn text-left">
                   <span className="block font-['Cinzel',serif] text-[10px] uppercase tracking-[0.2em] text-[#9a7470] font-semibold mb-1">
                     {h.kicker}
                   </span>
@@ -188,18 +187,18 @@ export function DrumiInnerRoom({
         })}
 
         {/* Center Bottom Welcome & Scroll Cue */}
-        <div className="absolute bottom-10 left-0 right-0 z-20 flex flex-col items-center text-center text-white px-4">
+        <div className="absolute bottom-8 left-0 right-0 z-20 flex flex-col items-center text-center text-white px-4">
           <span className="font-['Cinzel',serif] text-xs uppercase tracking-[0.3em] text-[#eedcd7] mb-2 font-medium">
             A Journey Back to Yourself
           </span>
-          <h2 className="font-['Cinzel',serif] text-2xl sm:text-4xl font-light tracking-widest text-white drop-shadow-md mb-6">
+          <h2 className="font-['Cinzel',serif] text-2xl sm:text-4xl font-light tracking-widest text-white drop-shadow-md mb-5">
             WELCOME TO DRUMI
           </h2>
 
           <button
             type="button"
             onClick={scrollToFounder}
-            className="flex flex-col items-center gap-2 text-white/80 hover:text-white transition-colors cursor-pointer group"
+            className="flex flex-col items-center gap-1.5 text-white/80 hover:text-white transition-colors cursor-pointer group"
           >
             <span className="font-['Cinzel',serif] text-[10px] tracking-[0.25em] uppercase font-medium">
               Discover Founder Story & Practices
@@ -209,7 +208,7 @@ export function DrumiInnerRoom({
               fill="none"
               stroke="currentColor"
               strokeWidth="1.8"
-              className="w-5 h-5 animate-bounce group-hover:translate-y-1 transition-transform"
+              className="w-4 h-4 animate-bounce group-hover:translate-y-1 transition-transform"
             >
               <path d="M7 13l5 5 5-5M7 7l5 5 5-5" />
             </svg>

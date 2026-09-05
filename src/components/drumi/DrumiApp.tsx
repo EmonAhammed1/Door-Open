@@ -87,27 +87,51 @@ export function DrumiApp({ onSwitchToAncestors }: DrumiAppProps) {
 
   return (
     <div className="w-full min-h-screen bg-[#ede6df] text-[#342921] relative font-['Cormorant_Garamond',serif] overflow-x-hidden">
-      {/* Top Floating Controls */}
-      <div className="fixed top-5 left-6 z-50 flex items-center gap-2.5">
-        <button
-          type="button"
-          onClick={() => setShowOriginalComparison((prev) => !prev)}
-          className="px-3.5 py-1.5 rounded-full border border-[#c4a9a6] bg-[#fbf7f4]/90 backdrop-blur-md text-[#7d6957] text-[10px] uppercase tracking-[0.2em] font-['Cinzel',serif] shadow-sm hover:bg-white transition-all flex items-center gap-1.5 cursor-pointer"
-          title="Toggle 1:1 Reference Mockup"
-        >
-          <span>{showOriginalComparison ? "Hide Mockup" : "Compare with Mockup"}</span>
-        </button>
-
-        {onSwitchToAncestors && (
+      {/* Top Floating Controls - shown on threshold */}
+      {phase !== "inside" && (
+        <div className="fixed top-5 left-6 z-50 flex items-center gap-2.5">
           <button
             type="button"
-            onClick={onSwitchToAncestors}
-            className="px-3.5 py-1.5 rounded-full border border-[#d8c9be] bg-[#fbf7f4]/80 backdrop-blur-md text-[#8f7b6b] text-[10px] uppercase tracking-[0.16em] font-['Cinzel',serif] shadow-sm hover:bg-white transition-all cursor-pointer"
+            onClick={() => setShowOriginalComparison((prev) => !prev)}
+            className="px-3.5 py-1.5 rounded-full border border-[#c4a9a6] bg-[#fbf7f4]/90 backdrop-blur-md text-[#7d6957] text-[10px] uppercase tracking-[0.2em] font-['Cinzel',serif] shadow-sm hover:bg-white transition-all flex items-center gap-1.5 cursor-pointer"
+            title="Toggle 1:1 Reference Mockup"
           >
-            Ancestors Room
+            <span>{showOriginalComparison ? "Hide Mockup" : "Compare with Mockup"}</span>
           </button>
-        )}
-      </div>
+
+          {onSwitchToAncestors && (
+            <button
+              type="button"
+              onClick={onSwitchToAncestors}
+              className="px-3.5 py-1.5 rounded-full border border-[#d8c9be] bg-[#fbf7f4]/80 backdrop-blur-md text-[#8f7b6b] text-[10px] uppercase tracking-[0.16em] font-['Cinzel',serif] shadow-sm hover:bg-white transition-all cursor-pointer"
+            >
+              Ancestors Room
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Discrete Bottom-Left Controls when inside sanctuary */}
+      {phase === "inside" && (
+        <div className="fixed bottom-4 left-6 z-40 flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity">
+          <button
+            type="button"
+            onClick={() => setShowOriginalComparison((prev) => !prev)}
+            className="px-3 py-1 rounded-full border border-white/30 bg-black/40 text-white/80 text-[9px] uppercase tracking-[0.16em] font-['Cinzel',serif] backdrop-blur-md hover:bg-black/60 transition-all cursor-pointer"
+          >
+            Mockup Ref
+          </button>
+          {onSwitchToAncestors && (
+            <button
+              type="button"
+              onClick={onSwitchToAncestors}
+              className="px-3 py-1 rounded-full border border-white/30 bg-black/40 text-white/80 text-[9px] uppercase tracking-[0.16em] font-['Cinzel',serif] backdrop-blur-md hover:bg-black/60 transition-all cursor-pointer"
+            >
+              Ancestors
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Comparison Modal */}
       {showOriginalComparison && (
