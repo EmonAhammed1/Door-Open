@@ -5,17 +5,19 @@ import { Room } from "./components/Room";
 import { MenuOverlay } from "./components/MenuOverlay";
 import { Handoff } from "./components/Handoff";
 import { useAmbientSound } from "./hooks/useAmbientSound";
+import { DrumiApp } from "./components/drumi/DrumiApp";
 
 /** Timings (ms) — keep in sync with the CSS door transitions. */
 const TEXT_FADE_MS = 250;
 const DOOR_OPEN_MS = 1500;
 
-/**
- * App = a tiny state machine:
- *   idle → (Enter) → opening → entering → done
- * `#room` in the URL skips the threshold, `#handoff` opens the developer kit.
- */
 export default function App() {
+  const [viewMode, setViewMode] = useState<"drumi" | "ancestors">(
+    typeof window !== "undefined" && window.location.hash.includes("ancestors")
+      ? "ancestors"
+      : "drumi"
+  );
+
   const startInside = typeof window !== "undefined" && window.location.hash === "#room";
   const [phase, setPhase] = useState<DoorPhase>(startInside ? "done" : "idle");
   const [leaving, setLeaving] = useState(false);
@@ -47,28 +49,55 @@ export default function App() {
 
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
-  // No page scroll (and no scrollbar reflow) until the visitor is inside the room
   useEffect(() => {
+    if (viewMode === "drumi") {
+      document.body.style.overflow = "auto";
+      return;
+    }
     document.body.style.overflow = phase === "done" ? "" : "hidden";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [phase]);
+  }, [phase, viewMode]);
 
   // Keyboard shortcut: Enter key on the threshold
   useEffect(() => {
-    if (phase !== "idle") return;
+    if (viewMode !== "ancestors" || phase !== "idle") return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Enter" && !menuOpen && !docsOpen) enter();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [phase, enter, menuOpen, docsOpen]);
+  }, [phase, enter, menuOpen, docsOpen, viewMode]);
+
+  // If in DRUMI mode, show the stunning DRUMI experience
+  if (viewMode === "drumi") {
+    return (
+      <DrumiApp
+        onSwitchToAncestors={() => {
+          window.location.hash = "ancestors";
+          setViewMode("ancestors");
+        }}
+      />
+    );
+  }
 
   const inRoom = phase === "entering" || phase === "done";
 
   return (
     <>
+      {/* Switch back to DRUMI floating button */}
+      <button
+        type="button"
+        onClick={() => {
+          window.location.hash = "";
+          setViewMode("drumi");
+        }}
+        className="fixed left-4 top-4 z-[90] px-3.5 py-1.5 rounded-full border border-gold/40 bg-ink/80 text-gold-light text-xs uppercase tracking-[0.2em] font-cinzel backdrop-blur hover:bg-gold/20 transition-all"
+      >
+        ← View DRUMI Sanctuary
+      </button>
+
       {inRoom && (
         <Room
           arrived={phase === "done"}
