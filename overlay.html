@@ -6,10 +6,15 @@
     <title>Door Overlay</title>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
-      html, body, #root {
+      html, body {
+        width: 100%; height: 100%;
+        /* ✅ Transparent — WP site shows through the arch hole */
+        background: transparent !important;
+        overflow: hidden;
+      }
+      #root {
         width: 100%; height: 100%;
         background: transparent;
-        overflow: hidden;
       }
     </style>
   </head>

@@ -1,27 +1,27 @@
 /**
- * WordPress Overlay Mode
- * ─────────────────────
- * This is a standalone entry for the WordPress intro overlay.
- * It shows ONLY the door animation (no inner room, no UI chrome).
- * 
- * Behaviour:
- *  • Preloads the WordPress site BEHIND the overlay (transparent background)
- *  • Auto-starts the door open animation after a short delay
- *  • When the walk-through is complete → postMessage('door-done') to parent
- *  • The parent WP page fades the overlay out
+ * WordPress Overlay Mode — Entry Component
+ * ────────────────────────────────────────
+ * Shows the door animation as a transparent overlay over the WordPress site.
+ * The stone arch frame has a transparent hole → the WP homepage shows through.
+ *
+ * Flow:
+ *  1. Component mounts, auto-start timer fires (800ms)
+ *  2. Doors swing open (phase: "opening") → door panels rotate away
+ *  3. Camera walks through (phase: "entering") → scene zooms, arch fades out
+ *  4. onArrived → postMessage("door-animation-done") → WP plugin fades the iframe
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DrumiThreshold, type DrumiPhase } from "./components/drumi/DrumiThreshold";
+import { WPDoorOverlay, type WPPhase } from "./components/drumi/WPDoorOverlay";
 import { useDrumiSound } from "./hooks/useDrumiSound";
 
-const TEXT_FADE_MS = 200;
-const DOOR_OPEN_MS = 1400;
-const AUTO_START_DELAY = 800; // ms before auto-opening doors
+const TEXT_FADE_MS    = 200;
+const DOOR_OPEN_MS    = 1400;
+const AUTO_START_DELAY = 900; // wait for WP page to paint before auto-opening
 
 export default function WPOverlay() {
-  const [phase, setPhase] = useState<DrumiPhase>("idle");
-  const { soundOn, toggleSound, playDoorOpen } = useDrumiSound();
+  const [phase, setPhase] = useState<WPPhase>("idle");
+  const { playDoorOpen } = useDrumiSound();
   const enteringRef = useRef(false);
   const timers = useRef<number[]>([]);
 
@@ -39,33 +39,27 @@ export default function WPOverlay() {
   }, [phase, playDoorOpen]);
 
   const handleArrived = useCallback(() => {
-    setPhase("inside");
-    // Notify the WordPress parent page — overlay is done, fade it out
+    setPhase("done");
+    // Notify the WordPress parent page — overlay should now fade out
     try {
       window.parent.postMessage({ type: "door-animation-done" }, "*");
     } catch {
-      // same-origin fallback: dispatch custom event
+      // Fallback if same-origin access is restricted
       window.dispatchEvent(new CustomEvent("door-animation-done"));
     }
   }, []);
 
-  // Auto-start the animation shortly after load
+  // Auto-start: open the doors after a short delay so the WP page is visible first
   useEffect(() => {
-    const id = window.setTimeout(() => handleEnter(), AUTO_START_DELAY);
+    const id = window.setTimeout(handleEnter, AUTO_START_DELAY);
     timers.current.push(id);
     return () => timers.current.forEach(clearTimeout);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Once "inside" phase → this component has nothing to render
-  if (phase === "inside") return null;
-
   return (
-    <DrumiThreshold
+    <WPDoorOverlay
       phase={phase}
-      soundOn={soundOn}
-      onEnter={handleEnter}
       onArrived={handleArrived}
-      onToggleSound={toggleSound}
     />
   );
 }
