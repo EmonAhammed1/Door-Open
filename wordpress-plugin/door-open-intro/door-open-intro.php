@@ -116,8 +116,8 @@ function doi_get_threshold_html( $args = [] ) {
     ob_start();
     ?>
     <section id="tar-threshold" class="tar-threshold"
-             data-door-left="37.2" data-door-right="62.8" data-door-top="15.5" data-door-bottom="86.5"
-             data-lintel-y="11.8"
+             data-door-left="35.0" data-door-right="65.0" data-door-top="16.4" data-door-bottom="86.9"
+             data-lintel-y="9.0"
              data-home-url="<?php echo $url; ?>"
              data-skip-key="<?php echo $skip_key; ?>">
 

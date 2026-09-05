@@ -234,11 +234,11 @@
     if (room) room.style.backgroundImage = 'url("' + roomSrc + '")';
 
     var pct = {
-      l: parseFloat(root.getAttribute('data-door-left') || '37.2') / 100,
-      r: parseFloat(root.getAttribute('data-door-right') || '62.8') / 100,
-      t: parseFloat(root.getAttribute('data-door-top') || '15.5') / 100,
-      b: parseFloat(root.getAttribute('data-door-bottom') || '86.5') / 100,
-      lintelY: parseFloat(root.getAttribute('data-lintel-y') || '11.8') / 100
+      l: parseFloat(root.getAttribute('data-door-left') || '35.0') / 100,
+      r: parseFloat(root.getAttribute('data-door-right') || '65.0') / 100,
+      t: parseFloat(root.getAttribute('data-door-top') || '16.4') / 100,
+      b: parseFloat(root.getAttribute('data-door-bottom') || '86.9') / 100,
+      lintelY: parseFloat(root.getAttribute('data-lintel-y') || '9.0') / 100
     };
 
     var natural = null, geo = null, rect = null, center = null, busy = false;
@@ -405,11 +405,11 @@
     var sec = document.createElement('section');
     sec.id = 'tar-threshold';
     sec.className = 'tar-threshold';
-    sec.setAttribute('data-door-left', '37.2');
-    sec.setAttribute('data-door-right', '62.8');
-    sec.setAttribute('data-door-top', '15.5');
-    sec.setAttribute('data-door-bottom', '86.5');
-    sec.setAttribute('data-lintel-y', '11.8');
+    sec.setAttribute('data-door-left', '35.0');
+    sec.setAttribute('data-door-right', '65.0');
+    sec.setAttribute('data-door-top', '16.4');
+    sec.setAttribute('data-door-bottom', '86.9');
+    sec.setAttribute('data-lintel-y', '9.0');
     sec.setAttribute('data-home-url', destUrl);
     sec.setAttribute('data-skip-key', ''); // do not skip when clicked explicitly
 

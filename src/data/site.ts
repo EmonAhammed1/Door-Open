@@ -140,7 +140,7 @@ export const FOOTER = {
 };
 
 /** Fractions of the threshold image occupied by the two door leaves (measured from the artwork). */
-export const DOOR_RECT = { left: 0.372, right: 0.628, top: 0.155, bottom: 0.865 };
+export const DOOR_RECT = { left: 0.350, right: 0.650, top: 0.164, bottom: 0.869 };
 /** Where the "IBÁ AṢẸ EGÚN" lintel plank sits on each image (fractions). */
-export const LINTEL_THRESHOLD = { x: 0.5, y: 0.118, size: 0.0165 };
+export const LINTEL_THRESHOLD = { x: 0.5, y: 0.090, size: 0.0165 };
 export const LINTEL_ROOM = { x: 0.5, y: 0.1, size: 0.011 };
