@@ -416,7 +416,7 @@
     var doorImg = opts.doorImg || cfg.doorImageUrl || '';
     var roomImg = opts.roomImg || cfg.roomImageUrl || '';
     var destUrl = opts.url     || cfg.preloadUrl    || '';
-    var btnText = opts.btnText || cfg.buttonText    || 'ENTER THE ROOM';
+    var btnText = opts.btnText || cfg.buttonText    || 'JOIN THE JOURNEY';
 
     var sec = document.createElement('section');
     sec.id = 'tar-threshold';
@@ -440,7 +440,6 @@
           '<div class="tar-panel tar-panel--right"><span class="tar-panel__shade"></span></div>' +
           '<div class="tar-seam"></div>' +
         '</div>' +
-        '<div class="tar-lintel"><span>✠</span>IBÁ AṢẸ EGÚN<span>✠</span></div>' +
       '</div>' +
       '<div class="tar-glow"></div>' +
       '<div class="tar-flicker"></div>' +
@@ -449,9 +448,15 @@
       '<div class="tar-threshold__ui">' +
         '<header class="tar-topbar">' +
           '<div class="tar-logo">' +
-            '<span class="tar-logo__name">The<br>Ancestors’<br>Room</span>' +
-            '<span class="tar-logo__rule"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="2.4"/><path d="M12 1.5v6M12 16.5v6M1.5 12h6M16.5 12h6"/></svg></span>' +
-            '<span class="tar-logo__tag">Rooted. Grounded. Guided.</span>' +
+            '<svg class="tar-logo__droplet" viewBox="0 0 40 48" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">' +
+              '<path d="M20 2C20 2 6 22 6 32C6 39.732 12.268 46 20 46C27.732 46 34 39.732 34 32C34 22 20 2 20 2Z" />' +
+              '<circle cx="20" cy="32" r="7" />' +
+              '<circle cx="20" cy="22" r="1.2" fill="currentColor" />' +
+              '<circle cx="20" cy="26" r="1.2" fill="currentColor" />' +
+              '<circle cx="20" cy="30" r="1.2" fill="currentColor" />' +
+            '</svg>' +
+            '<span class="tar-logo__name">D R U M I</span>' +
+            '<span class="tar-logo__tag">A sanctuary for your dreams</span>' +
           '</div>' +
           '<nav class="tar-topbar__nav">' +
             '<button class="tar-nav-link" type="button" data-tar-sound aria-pressed="false">Sound <span class="tar-eq"><i></i><i></i><i></i><i></i></span></button>' +
@@ -459,22 +464,31 @@
         '</header>' +
         '<div class="tar-threshold__content">' +
           '<div class="tar-threshold__scrim">' +
-            '<h1 class="tar-display tar-glow-text">There is a Room<br>Beyond This Door.</h1>' +
-            '<svg class="tar-ornament tar-threshold__ornament" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">' +
-              '<circle cx="12" cy="12" r="2.4"/><path d="M12 1.5v6M12 16.5v6M1.5 12h6M16.5 12h6"/>' +
-            '</svg>' +
-            '<p>A place where memory is kept.<br>Where tradition is carried forward.<br>Where the living remember the ones who came before.</p>' +
-            '<div style="margin-top:32px;">' +
+            '<div class="tar-emblem-wrap">' +
+              '<svg class="tar-emblem" viewBox="0 0 40 48" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">' +
+                '<path d="M20 2C20 2 6 22 6 32C6 39.732 12.268 46 20 46C27.732 46 34 39.732 34 32C34 22 20 2 20 2Z" />' +
+                '<circle cx="20" cy="32" r="7" />' +
+                '<circle cx="20" cy="22" r="1.2" fill="currentColor" />' +
+                '<circle cx="20" cy="26" r="1.2" fill="currentColor" />' +
+                '<circle cx="20" cy="30" r="1.2" fill="currentColor" />' +
+              '</svg>' +
+            '</div>' +
+            '<h1 class="tar-display tar-drumi-title">D R U M I</h1>' +
+            '<div class="tar-drumi-sub">' +
+              '<p>A sanctuary for your dreams.</p>' +
+              '<p>A journey back to yourself.</p>' +
+            '</div>' +
+            '<div class="tar-btn-container">' +
               '<button class="tar-btn" type="button" data-tar-enter>' +
                 '<span>' + btnText + '</span>' +
-                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h17M14 6l6 6-6 6"/></svg>' +
               '</button>' +
+              '<span class="tar-btn-sub">STEP INTO YOUR INNER WORLD</span>' +
             '</div>' +
           '</div>' +
         '</div>' +
         '<footer class="tar-threshold__foot">' +
-          '<p class="tar-smallcaps">Same Roots.<br>Different Generations.<br>Always Home.</p>' +
-          '<p class="tar-smallcaps tar-threshold__foot-right">People. Places. Practices.<br>You Belong Here.</p>' +
+          '<p class="tar-smallcaps">Slow Down.<br>Listen Within.</p>' +
+          '<p class="tar-smallcaps tar-threshold__foot-right">Trust The Message.<br>Return To You.</p>' +
         '</footer>' +
       '</div>';
 
@@ -490,7 +504,7 @@
     var url     = (btn && btn.getAttribute('data-doi-url'))  || cfg.preloadUrl || '';
     var doorImg = (btn && btn.getAttribute('data-door-img')) || cfg.doorImageUrl || '';
     var roomImg = (btn && btn.getAttribute('data-room-img')) || cfg.roomImageUrl || '';
-    var btnText = (btn && btn.getAttribute('data-btn-text')) || cfg.buttonText || 'ENTER THE ROOM';
+    var btnText = (btn && btn.getAttribute('data-btn-text')) || cfg.buttonText || 'JOIN THE JOURNEY';
 
     var existing = $('#tar-threshold');
     if (existing && !existing.classList.contains('is-done')) {

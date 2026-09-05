@@ -24,7 +24,7 @@ function doi_defaults() {
         'widget_enabled'     => 1,
         'sound_enabled'      => 1,
         'session_once'       => 1,
-        'button_text'        => 'ENTER THE ROOM',
+        'button_text'        => 'JOIN THE JOURNEY',
         'preload_url'        => '',
         'door_image_url'     => DOI_PLUGIN_URL . 'assets/threshold-doors.jpg',
         'room_image_url'     => DOI_PLUGIN_URL . 'assets/room-interior.jpg',
@@ -67,7 +67,7 @@ function doi_enqueue_frontend_assets() {
     // Pass settings directly to JavaScript
     $door_img = doi_get( 'door_image_url' ) ?: DOI_PLUGIN_URL . 'assets/threshold-doors.jpg';
     $room_img = doi_get( 'room_image_url' ) ?: DOI_PLUGIN_URL . 'assets/room-interior.jpg';
-    $btn_text = doi_get( 'button_text' )     ?: 'ENTER THE ROOM';
+    $btn_text = doi_get( 'button_text' )     ?: 'JOIN THE JOURNEY';
     $url      = doi_get( 'preload_url' )     ?: '';
 
     wp_localize_script( 'doi-door-open', 'DOI_CONFIG', [
@@ -92,7 +92,7 @@ function doi_render_site_intro_overlay() {
 
     $door_img  = doi_get( 'door_image_url' ) ?: DOI_PLUGIN_URL . 'assets/threshold-doors.jpg';
     $room_img  = doi_get( 'room_image_url' ) ?: DOI_PLUGIN_URL . 'assets/room-interior.jpg';
-    $btn_text  = doi_get( 'button_text' )     ?: 'ENTER THE ROOM';
+    $btn_text  = doi_get( 'button_text' )     ?: 'JOIN THE JOURNEY';
     $url       = doi_get( 'preload_url' )     ?: '';
     $skip_key  = doi_get( 'session_once' )    ? 'doi_session_entered' : '';
 
@@ -109,7 +109,7 @@ function doi_render_site_intro_overlay() {
 function doi_get_threshold_html( $args = [] ) {
     $door_img = esc_url( $args['door_img'] ?? ( DOI_PLUGIN_URL . 'assets/threshold-doors.jpg' ) );
     $room_img = esc_url( $args['room_img'] ?? ( DOI_PLUGIN_URL . 'assets/room-interior.jpg' ) );
-    $btn_text = esc_html( $args['btn_text'] ?? ( doi_get( 'button_text' ) ?: 'ENTER THE ROOM' ) );
+    $btn_text = esc_html( $args['btn_text'] ?? ( doi_get( 'button_text' ) ?: 'JOIN THE JOURNEY' ) );
     $url      = esc_attr( $args['url'] ?? ( doi_get( 'preload_url' ) ?: '' ) );
     $skip_key = esc_attr( $args['skip_key'] ?? '' );
 
@@ -121,18 +121,17 @@ function doi_get_threshold_html( $args = [] ) {
              data-home-url="<?php echo $url; ?>"
              data-skip-key="<?php echo $skip_key; ?>">
 
-      <!-- ===== SCENE (Artwork + 3D Door Leaves) ===== -->
+      <!-- 3D Scene Layer -->
       <div class="tar-scene">
-        <div class="tar-scene__base" data-src="<?php echo $door_img; ?>"></div>
+        <div class="tar-scene__base" style="background-image: url('<?php echo $door_img; ?>');"></div>
         <div class="tar-scene__clip">
-          <div class="tar-scene__room" data-src="<?php echo $room_img; ?>"></div>
+          <div class="tar-scene__room" style="background-image: url('<?php echo $room_img; ?>');"></div>
         </div>
         <div class="tar-scene__panels">
           <div class="tar-panel tar-panel--left"><span class="tar-panel__shade"></span></div>
           <div class="tar-panel tar-panel--right"><span class="tar-panel__shade"></span></div>
           <div class="tar-seam"></div>
         </div>
-        <div class="tar-lintel"><span>✠</span>IBÁ AṢẸ EGÚN<span>✠</span></div>
       </div>
 
       <div class="tar-glow"></div>
@@ -144,11 +143,15 @@ function doi_get_threshold_html( $args = [] ) {
       <div class="tar-threshold__ui">
         <header class="tar-topbar">
           <div class="tar-logo">
-            <span class="tar-logo__name">The<br>Ancestors’<br>Room</span>
-            <span class="tar-logo__rule">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="2.4"/><path d="M12 1.5v6M12 16.5v6M1.5 12h6M16.5 12h6"/></svg>
-            </span>
-            <span class="tar-logo__tag">Rooted. Grounded. Guided.</span>
+            <svg class="tar-logo__droplet" viewBox="0 0 40 48" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M20 2C20 2 6 22 6 32C6 39.732 12.268 46 20 46C27.732 46 34 39.732 34 32C34 22 20 2 20 2Z" />
+              <circle cx="20" cy="32" r="7" />
+              <circle cx="20" cy="22" r="1.2" fill="currentColor" />
+              <circle cx="20" cy="26" r="1.2" fill="currentColor" />
+              <circle cx="20" cy="30" r="1.2" fill="currentColor" />
+            </svg>
+            <span class="tar-logo__name">D R U M I</span>
+            <span class="tar-logo__tag">A sanctuary for your dreams</span>
           </div>
           <nav class="tar-topbar__nav">
             <button class="tar-nav-link" type="button" data-tar-sound aria-pressed="false">Sound <span class="tar-eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
@@ -157,22 +160,25 @@ function doi_get_threshold_html( $args = [] ) {
 
         <div class="tar-threshold__content">
           <div class="tar-threshold__scrim">
-            <h1 class="tar-display tar-glow-text">There is a Room<br>Beyond This Door.</h1>
-            <svg class="tar-ornament tar-threshold__ornament" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
-              <circle cx="12" cy="12" r="2.4"/><path d="M12 1.5v6M12 16.5v6M1.5 12h6M16.5 12h6"/>
-              <path d="M12 1.5l-1.6 2.2M12 1.5l1.6 2.2M12 22.5l-1.6-2.2M12 22.5l1.6-2.2M1.5 12l2.2-1.6M1.5 12l2.2 1.6M22.5 12l-2.2-1.6M22.5 12l-2.2 1.6"/>
-            </svg>
-            <p>
-              A place where memory is kept.<br>
-              Where tradition is carried forward.<br>
-              Where the living remember<br>
-              the ones who came before.
-            </p>
-            <div style="margin-top: 36px;">
+            <div class="tar-emblem-wrap">
+              <svg class="tar-emblem" viewBox="0 0 40 48" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path d="M20 2C20 2 6 22 6 32C6 39.732 12.268 46 20 46C27.732 46 34 39.732 34 32C34 22 20 2 20 2Z" />
+                <circle cx="20" cy="32" r="7" />
+                <circle cx="20" cy="22" r="1.2" fill="currentColor" />
+                <circle cx="20" cy="26" r="1.2" fill="currentColor" />
+                <circle cx="20" cy="30" r="1.2" fill="currentColor" />
+              </svg>
+            </div>
+            <h1 class="tar-display tar-drumi-title">D R U M I</h1>
+            <div class="tar-drumi-sub">
+              <p>A sanctuary for your dreams.</p>
+              <p>A journey back to yourself.</p>
+            </div>
+            <div class="tar-btn-container">
               <button class="tar-btn" type="button" data-tar-enter>
                 <span><?php echo $btn_text; ?></span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h17M14 6l6 6-6 6"/></svg>
               </button>
+              <span class="tar-btn-sub">STEP INTO YOUR INNER WORLD</span>
             </div>
           </div>
         </div>
@@ -197,7 +203,7 @@ function doi_register_shortcodes() {
 function doi_shortcode_render( $atts ) {
     $atts = shortcode_atts( [
         'mode'     => 'button', // 'button' or 'intro'
-        'text'     => doi_get( 'button_text' ) ?: 'ENTER THE ROOM',
+        'text'     => doi_get( 'button_text' ) ?: 'JOIN THE JOURNEY',
         'url'      => doi_get( 'preload_url' ) ?: '',
         'door_img' => doi_get( 'door_image_url' ) ?: ( DOI_PLUGIN_URL . 'assets/threshold-doors.jpg' ),
         'room_img' => doi_get( 'room_image_url' ) ?: ( DOI_PLUGIN_URL . 'assets/room-interior.jpg' ),
@@ -234,10 +240,8 @@ function doi_shortcode_render( $atts ) {
              aria-label="%s"
            >
              <span>%s</span>
-             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-               <path d="M3 12h17M14 6l6 6-6 6"/>
-             </svg>
            </button>
+           <span class="doi-btn-sub">STEP INTO YOUR INNER WORLD</span>
          </div>',
         esc_url( $atts['url'] ),
         esc_url( $atts['door_img'] ),
@@ -263,13 +267,13 @@ class DOI_Widget extends WP_Widget {
     }
     public function widget( $args, $instance ) {
         echo $args['before_widget'];
-        $text = ! empty( $instance['text'] ) ? $instance['text'] : ( doi_get( 'button_text' ) ?: 'ENTER THE ROOM' );
+        $text = ! empty( $instance['text'] ) ? $instance['text'] : ( doi_get( 'button_text' ) ?: 'JOIN THE JOURNEY' );
         $url  = ! empty( $instance['url'] )  ? $instance['url']  : ( doi_get( 'preload_url' ) ?: '' );
         echo do_shortcode( '[door_open text="' . esc_attr( $text ) . '" url="' . esc_attr( $url ) . '"]' );
         echo $args['after_widget'];
     }
     public function form( $instance ) {
-        $text = $instance['text'] ?? 'ENTER THE ROOM';
+        $text = $instance['text'] ?? 'JOIN THE JOURNEY';
         $url  = $instance['url']  ?? '';
         ?>
         <p>
@@ -320,7 +324,7 @@ function doi_sanitize_settings( $in ) {
         'widget_enabled'     => empty( $in['widget_enabled'] )     ? 0 : 1,
         'sound_enabled'      => empty( $in['sound_enabled'] )      ? 0 : 1,
         'session_once'       => empty( $in['session_once'] )       ? 0 : 1,
-        'button_text'        => sanitize_text_field( $in['button_text'] ?? 'ENTER THE ROOM' ),
+        'button_text'        => sanitize_text_field( $in['button_text'] ?? 'JOIN THE JOURNEY' ),
         'preload_url'        => esc_url_raw( $in['preload_url'] ?? '' ),
         'door_image_url'     => esc_url_raw( $in['door_image_url'] ?? ( DOI_PLUGIN_URL . 'assets/threshold-doors.jpg' ) ),
         'room_image_url'     => esc_url_raw( $in['room_image_url'] ?? ( DOI_PLUGIN_URL . 'assets/room-interior.jpg' ) ),
@@ -419,8 +423,8 @@ function doi_settings_page() {
         <div class="doi-field-row">
           <label for="doi_button_text">Button Text</label>
           <input type="text" id="doi_button_text" name="<?php echo DOI_OPTIONS; ?>[button_text]"
-                 value="<?php echo esc_attr( $opts['button_text'] ); ?>" placeholder="ENTER THE ROOM">
-          <p class="description" style="color:#646970; font-size:12px; margin-top:4px;">The label shown on the door trigger button (e.g. "ENTER THE ROOM" or "JOIN THE JOURNEY").</p>
+                 value="<?php echo esc_attr( $opts['button_text'] ); ?>" placeholder="JOIN THE JOURNEY">
+          <p class="description" style="color:#646970; font-size:12px; margin-top:4px;">The label shown on the door trigger button (e.g. "JOIN THE JOURNEY").</p>
         </div>
 
         <div class="doi-field-row">

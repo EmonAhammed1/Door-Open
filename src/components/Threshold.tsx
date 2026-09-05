@@ -57,34 +57,53 @@ export function Threshold({ leaving, soundOn, onEnter, onToggleSound, onOpenMenu
       />
 
       {/* Centre copy */}
-      <div className="absolute inset-0 flex items-center justify-center px-5">
-        <div className="text-scrim relative mx-auto max-w-[680px] px-6 py-14 text-center sm:px-14">
+      <div className="absolute inset-0 flex items-center justify-center px-5 pointer-events-none">
+        <div className="text-scrim relative mx-auto max-w-[680px] px-6 py-10 text-center sm:px-12 pointer-events-auto">
+          {/* Sacred Droplet Emblem */}
+          <div className="flex justify-center mb-3 text-gold/90">
+            <svg
+              viewBox="0 0 40 48"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              className="w-8 h-9 drop-shadow-md"
+            >
+              <path d="M20 2C20 2 6 22 6 32C6 39.732 12.268 46 20 46C27.732 46 34 39.732 34 32C34 22 20 2 20 2Z" />
+              <circle cx="20" cy="32" r="7" />
+              <circle cx="20" cy="22" r="1.2" fill="currentColor" />
+              <circle cx="20" cy="26" r="1.2" fill="currentColor" />
+              <circle cx="20" cy="30" r="1.2" fill="currentColor" />
+            </svg>
+          </div>
+
           <h1
-            className="display rise text-glow text-[clamp(1.55rem,3.3vw,2.7rem)] leading-[1.28] tracking-[0.06em] text-cream"
+            className="display rise text-glow text-[clamp(2.2rem,4.2vw,3.3rem)] leading-[1.15] tracking-[0.35em] text-cream pl-[0.35em]"
             style={{ ["--d" as string]: "0.5s" }}
           >
-            {THRESHOLD.headline.map((l) => (
-              <span key={l} className="block">
-                {l}
-              </span>
-            ))}
+            DRUMI
           </h1>
-          <Ornament className="rise mx-auto my-5 text-gold-light sm:my-6" size={20} />
-          <p
-            className="body rise text-shadow-soft text-[clamp(1.1rem,1.55vw,1.5rem)] leading-[1.55] text-cream/90"
-            style={{ ["--d" as string]: "0.75s" }}
-          >
+
+          <div className="mt-3.5 space-y-1">
             {THRESHOLD.body.map((l) => (
-              <span key={l} className="block">
+              <p
+                key={l}
+                className="font-['Cormorant_Garamond',serif] italic text-shadow-soft text-[clamp(1.15rem,1.65vw,1.45rem)] leading-[1.45] text-cream/95"
+              >
                 {l}
-              </span>
+              </p>
             ))}
-          </p>
-          <div className="rise mt-9 sm:mt-11" style={{ ["--d" as string]: "1s" }}>
-            <button className="btn-gold" onClick={onEnter}>
+          </div>
+
+          <div className="rise mt-8 sm:mt-10 flex flex-col items-center justify-center" style={{ ["--d" as string]: "1s" }}>
+            <button
+              className="px-11 py-3.5 rounded-[4px] bg-[#9a7470] hover:bg-[#86615d] active:scale-95 text-cream font-['Cinzel',serif] text-[0.82rem] sm:text-[0.88rem] uppercase tracking-[0.26em] font-medium shadow-[0_8px_24px_rgba(80,45,45,0.35)] transition-all duration-300 border border-[#c4a29f]/45 flex items-center justify-center cursor-pointer"
+              onClick={onEnter}
+            >
               <span>{THRESHOLD.cta}</span>
-              <ArrowRight className="arrow" size={15} />
             </button>
+            <span className="mt-3 font-['Cinzel',serif] text-[0.62rem] sm:text-[0.7rem] uppercase tracking-[0.32em] font-medium text-cream/80 drop-shadow-sm">
+              {THRESHOLD.subCta}
+            </span>
           </div>
         </div>
       </div>

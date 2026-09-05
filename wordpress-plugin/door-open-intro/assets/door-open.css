@@ -332,42 +332,32 @@ body.tar-locked {
   color: var(--tar-cream);
 }
 
+.tar-logo__droplet {
+  width: 20px;
+  height: 24px;
+  margin-bottom: 5px;
+  color: rgba(232, 213, 163, 0.9);
+  display: block;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.5));
+}
+
 .tar-logo__name {
   font-family: var(--tar-display);
   font-size: clamp(14px, 1.4vw, 19px);
   line-height: 1.1;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.28em;
   text-align: center;
   text-transform: uppercase;
-}
-
-.tar-logo__rule {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 5px 0;
-  color: rgba(201, 166, 107, 0.8);
-}
-
-.tar-logo__rule::before,
-.tar-logo__rule::after {
-  content: "";
-  width: 20px;
-  height: 1px;
-  background: rgba(201, 166, 107, 0.5);
-}
-
-.tar-logo__rule svg {
-  width: 10px;
-  height: 10px;
+  color: #fff;
 }
 
 .tar-logo__tag {
   font-family: var(--tar-display);
   font-size: 7.5px;
-  letter-spacing: 0.32em;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
   color: rgba(232, 213, 163, 0.85);
+  margin-top: 4px;
 }
 
 /* Sound equalizer indicator */
@@ -437,115 +427,115 @@ body.tar-sound-on [data-tar-sound] {
 
 .tar-threshold__scrim {
   max-width: 680px;
-  padding: 48px 40px;
+  padding: 40px 36px;
   text-align: center;
-  background: radial-gradient(ellipse 60% 55% at 50% 50%, rgba(10, 8, 6, 0.65), rgba(10, 8, 6, 0.3) 55%, transparent 78%);
+  background: radial-gradient(ellipse 65% 60% at 50% 50%, rgba(10, 8, 6, 0.65), rgba(10, 8, 6, 0.3) 55%, transparent 78%);
   border-radius: 12px;
 }
 
-.tar-threshold__scrim h1 {
+.tar-emblem-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.tar-emblem {
+  width: clamp(34px, 4vw, 42px);
+  height: auto;
+  color: rgba(232, 213, 163, 0.95);
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.5));
+}
+
+.tar-drumi-title {
   margin: 0;
   font-family: var(--tar-display);
-  font-size: clamp(1.6rem, 3.2vw, 2.7rem);
-  line-height: 1.25;
-  letter-spacing: 0.07em;
+  font-size: clamp(2.2rem, 4.4vw, 3.4rem);
+  line-height: 1.15;
+  letter-spacing: 0.35em;
   font-weight: 400;
-  color: var(--tar-cream);
+  color: #ffffff;
+  text-transform: uppercase;
+  padding-left: 0.35em; /* optical center balance */
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.8), 0 0 30px rgba(232, 213, 163, 0.25);
 }
 
-.tar-threshold__ornament {
-  margin: 20px auto;
-  width: 22px;
-  height: 22px;
-  color: var(--tar-gold-light);
-  display: block;
+.tar-drumi-sub {
+  margin-top: 14px;
 }
 
-.tar-threshold__scrim p {
+.tar-drumi-sub p {
   margin: 0;
   font-family: var(--tar-body);
-  font-size: clamp(1.05rem, 1.45vw, 1.35rem);
-  line-height: 1.55;
-  color: rgba(241, 230, 207, 0.9);
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.85);
+  font-style: italic;
+  font-size: clamp(1.15rem, 1.6vw, 1.45rem);
+  line-height: 1.45;
+  color: rgba(246, 239, 233, 0.95);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.85);
 }
 
-.tar-threshold__scrim .tar-btn {
-  margin-top: 36px;
+.tar-btn-container {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Luxury button */
+/* Image 3 Dusty-Rose Button */
 .tar-btn,
 .doi-btn {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.9em;
   font-family: var(--tar-display);
   text-transform: uppercase;
-  letter-spacing: 0.3em;
-  font-size: 0.78rem;
+  letter-spacing: 0.24em;
+  font-size: clamp(0.78rem, 1vw, 0.86rem);
   font-weight: 500;
-  color: var(--tar-cream);
-  padding: 1.1rem 2.6rem;
-  border: 1px solid rgba(201, 166, 107, 0.75);
-  background: rgba(10, 8, 6, 0.45);
-  backdrop-filter: blur(4px);
-  border-radius: 999px;
+  color: #ffffff;
+  padding: 15px 44px;
+  background: #9a7470;
+  border: 1px solid rgba(215, 185, 180, 0.45);
+  border-radius: 4px;
   overflow: hidden;
   text-decoration: none;
   cursor: pointer;
-  transition: color 0.45s, border-color 0.45s, box-shadow 0.5s, transform 0.35s var(--tar-ease-out);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(201, 166, 107, 0.15);
-}
-
-.tar-btn::before,
-.doi-btn::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(100deg, #c9a66b, #e8d5a3 55%, #c9a66b);
-  transform: translateX(-101%);
-  transition: transform 0.6s var(--tar-ease-out);
-  z-index: 1;
-}
-
-.tar-btn > *,
-.doi-btn > * {
-  position: relative;
-  z-index: 2;
+  transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, transform 0.25s ease;
+  box-shadow: 0 8px 24px rgba(80, 45, 45, 0.32), 0 2px 6px rgba(0, 0, 0, 0.25);
 }
 
 .tar-btn:hover,
 .tar-btn:focus-visible,
 .doi-btn:hover,
 .doi-btn:focus-visible {
-  color: #1a120a;
-  border-color: #e8d5a3;
-  box-shadow: 0 0 35px rgba(224, 138, 60, 0.4), 0 0 70px rgba(224, 138, 60, 0.2);
+  background: #86615d;
+  border-color: rgba(235, 205, 200, 0.65);
+  box-shadow: 0 10px 30px rgba(90, 50, 50, 0.48), 0 0 20px rgba(154, 116, 112, 0.35);
   transform: translateY(-2px);
+  color: #ffffff;
   outline: none;
 }
 
-.tar-btn:hover::before,
-.tar-btn:focus-visible::before,
-.doi-btn:hover::before,
-.doi-btn:focus-visible::before {
-  transform: translateX(0);
+.tar-btn:active,
+.doi-btn:active {
+  transform: translateY(0) scale(0.98);
 }
 
-.tar-btn svg,
-.doi-btn svg {
-  width: 15px;
-  height: 15px;
-  transition: transform 0.4s var(--tar-ease-out);
-}
-
-.tar-btn:hover svg,
-.doi-btn:hover svg {
-  transform: translateX(5px);
+/* Sub-caption under button: STEP INTO YOUR INNER WORLD */
+.tar-btn-sub,
+.doi-btn-sub {
+  display: block;
+  margin-top: 12px;
+  font-family: var(--tar-display);
+  font-size: clamp(0.6rem, 0.8vw, 0.7rem);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: rgba(220, 205, 190, 0.8);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+  text-align: center;
+  pointer-events: none;
 }
 
 /* Footer of threshold */
