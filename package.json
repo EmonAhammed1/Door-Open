@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:overlay": "vite build --mode overlay",
+    "build:all": "vite build && vite build --mode overlay",
     "preview": "vite preview"
   },
   "dependencies": {
