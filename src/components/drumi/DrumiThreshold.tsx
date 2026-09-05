@@ -258,9 +258,18 @@ export function DrumiThreshold({
           <button
             type="button"
             onClick={onEnter}
-            className="px-10 py-3.5 sm:px-12 sm:py-4 rounded-[4px] bg-[#9a7470] hover:bg-[#86615d] active:scale-95 text-[#fbf7f4] font-['Cinzel',serif] text-[0.8rem] sm:text-[0.88rem] uppercase tracking-[0.26em] font-medium shadow-[0_8px_24px_rgba(80,45,45,0.35)] transition-all duration-300 border border-[#bfa29f]/40 flex items-center justify-center cursor-pointer"
+            className="px-8 py-3 sm:px-10 sm:py-3.5 rounded-full bg-[#9a7470] hover:bg-[#886460] active:scale-95 text-[#fbf7f4] font-['Cinzel',serif] text-[0.76rem] sm:text-[0.88rem] uppercase tracking-[0.26em] font-medium shadow-[0_8px_24px_rgba(100,60,60,0.35)] transition-all duration-300 border border-[#bfa29f]/40 flex items-center gap-2 group cursor-pointer"
           >
             <span>JOIN THE JOURNEY</span>
+            <svg
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+            >
+              <path d="M4 10H16M16 10L11 5M16 10L11 15" />
+            </svg>
           </button>
 
           <span className="mt-2.5 text-[#af9680] font-['Cinzel',serif] text-[0.62rem] sm:text-[0.72rem] uppercase tracking-[0.3em] font-medium drop-shadow-sm">

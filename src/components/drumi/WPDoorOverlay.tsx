@@ -262,18 +262,24 @@ export function WPDoorOverlay({
             <button
               type="button"
               onClick={onEnter}
-              className="group relative px-10 py-3.5 sm:px-12 sm:py-4 rounded-[4px]
-                bg-[#9a7470] hover:bg-[#86615d] active:scale-[0.97]
-                text-[#fbf7f4] font-['Cinzel',serif] text-[0.8rem] sm:text-[0.88rem]
-                uppercase tracking-[0.26em] font-medium cursor-pointer
+              className="group relative px-8 py-3.5 sm:px-10 sm:py-4 rounded-full
+                bg-[#9a7470] hover:bg-[#7f5e5b] active:scale-[0.97]
+                text-[#fbf7f4] font-['Cinzel',serif] text-[0.76rem] sm:text-[0.86rem]
+                uppercase tracking-[0.28em] font-medium cursor-pointer
                 shadow-[0_8px_32px_rgba(100,55,50,0.45),0_2px_8px_rgba(0,0,0,0.2)]
                 border border-[#c4a29f]/50
                 transition-all duration-300
-                flex items-center justify-center"
+                flex items-center gap-2.5"
             >
               <span>{buttonText}</span>
+              <svg
+                viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8"
+                className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+              >
+                <path d="M4 10H16M16 10L11 5M16 10L11 15" />
+              </svg>
               {/* Shimmer */}
-              <span className="absolute inset-0 rounded-[4px] overflow-hidden pointer-events-none">
+              <span className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
                 <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
               </span>
             </button>

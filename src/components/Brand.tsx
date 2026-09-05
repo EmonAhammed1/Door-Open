@@ -64,31 +64,27 @@ export function Logo({
       className={cn("group inline-flex flex-col items-center text-cream", className)}
       aria-label={BRAND.name}
     >
-      <svg
-        viewBox="0 0 40 48"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        className="w-5 h-6 mb-1 text-gold/90 drop-shadow-sm"
-      >
-        <path d="M20 2C20 2 6 22 6 32C6 39.732 12.268 46 20 46C27.732 46 34 39.732 34 32C34 22 20 2 20 2Z" />
-        <circle cx="20" cy="32" r="7" />
-        <circle cx="20" cy="22" r="1.2" fill="currentColor" />
-        <circle cx="20" cy="26" r="1.2" fill="currentColor" />
-        <circle cx="20" cy="30" r="1.2" fill="currentColor" />
-      </svg>
       <span
         className={cn(
-          "display text-center leading-[1.05] tracking-[0.26em] pl-[0.26em]",
-          compact ? "text-[13px] sm:text-[15px]" : "text-[15px] sm:text-[18px] md:text-[20px]",
+          "display text-center leading-[1.05] tracking-[0.12em]",
+          compact ? "text-[13px] sm:text-[15px]" : "text-[15px] sm:text-[19px] md:text-[21px]",
         )}
       >
-        DRUMI
+        {BRAND.nameLines.map((l) => (
+          <span key={l} className="block">
+            {l}
+          </span>
+        ))}
+      </span>
+      <span className="my-1.5 flex items-center gap-1.5 text-gold/80">
+        <span className="h-px w-5 bg-gold/50" />
+        <Ornament size={11} />
+        <span className="h-px w-5 bg-gold/50" />
       </span>
       <span
         className={cn(
-          "display uppercase text-gold-light/85 transition-colors group-hover:text-gold-light mt-1",
-          compact ? "text-[6.5px] tracking-[0.24em]" : "text-[7px] tracking-[0.26em] sm:text-[7.5px]",
+          "display uppercase text-gold-light/85 transition-colors group-hover:text-gold-light",
+          compact ? "text-[6.5px] tracking-[0.3em]" : "text-[7px] tracking-[0.32em] sm:text-[8px]",
         )}
       >
         {BRAND.tagline}
