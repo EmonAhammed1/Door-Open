@@ -24,7 +24,7 @@ const DOOR_GEOMETRY = {
   bottom: 695 / 768,
 };
 
-const ENTER_MS = 1800;
+const ENTER_MS = 1400;
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 
@@ -106,7 +106,7 @@ export function DrumiThreshold({
       const shrink = 1 - easeOut(Math.min(1, t * 1.2));
       clip.style.clipPath = `inset(${inset0.t * shrink}px ${inset0.rgt * shrink}px ${inset0.b * shrink}px ${inset0.l * shrink}px)`;
 
-      const op = String(1 - easeInOut(Math.min(1, t / 0.65)));
+      const op = String(1 - easeInOut(Math.min(1, t / 0.6)));
       base.style.opacity = op;
       panels.style.opacity = op;
 
@@ -137,7 +137,7 @@ export function DrumiThreshold({
         <button
           type="button"
           onClick={onToggleSound}
-          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border backdrop-blur-md text-[11px] uppercase tracking-[0.2em] transition-all shadow-sm ${
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border backdrop-blur-md text-[11px] uppercase tracking-[0.2em] transition-all shadow-sm cursor-pointer ${
             soundOn
               ? "bg-[#9a7470]/90 border-[#c4a9a6] text-[#fbf7f4]"
               : "bg-[#f5efe9]/80 border-[#d8c9be] text-[#7d6957] hover:bg-[#ede3da]"
@@ -214,6 +214,7 @@ export function DrumiThreshold({
               : undefined
           }
         >
+          {/* This is the 100% clean open archway with NO DOORS AT ALL */}
           <div
             ref={openBgRef}
             className="absolute inset-0 transition-transform"
@@ -222,7 +223,7 @@ export function DrumiThreshold({
               backgroundSize: geo ? `${geo.dispW}px ${geo.dispH}px` : "cover",
               backgroundPosition: geo ? `${geo.offX}px ${geo.offY}px` : "center",
               transformOrigin: origin,
-              transform: "scale(1.25)",
+              transform: "scale(1.2)",
             }}
           />
         </div>
@@ -230,19 +231,18 @@ export function DrumiThreshold({
         {/* 3. Mathematical Arched Door Panels (3D Rotate Y) */}
         {rect && geo && (
           <div ref={panelsRef} className="absolute inset-0 pointer-events-none">
-            {/* Left Door Panel */}
+            {/* Left Door Panel - Swings open completely and fades out so NO DOOR IS VISIBLE */}
             <div
-              className="absolute transition-transform duration-[1500ms] cubic-bezier(0.25, 1, 0.5, 1)"
+              className="absolute transition-all duration-[1200ms] cubic-bezier(0.25, 1, 0.5, 1)"
               style={{
                 left: rect.left,
                 top: rect.top,
                 width: rect.width / 2 + 0.5,
                 height: rect.height,
                 transformOrigin: "left center",
-                transform: isOpen ? "rotateY(-84deg) scaleX(0.96)" : "rotateY(0deg)",
-                filter: isOpen
-                  ? "brightness(0.7) drop-shadow(12px 0 16px rgba(0,0,0,0.4))"
-                  : "brightness(1)",
+                transform: isOpen ? "rotateY(-115deg) scaleX(0.85)" : "rotateY(0deg)",
+                opacity: isOpen ? 0 : 1,
+                filter: isOpen ? "brightness(0.5)" : "brightness(1)",
               }}
             >
               <img
@@ -252,19 +252,18 @@ export function DrumiThreshold({
               />
             </div>
 
-            {/* Right Door Panel */}
+            {/* Right Door Panel - Swings open completely and fades out so NO DOOR IS VISIBLE */}
             <div
-              className="absolute transition-transform duration-[1500ms] cubic-bezier(0.25, 1, 0.5, 1)"
+              className="absolute transition-all duration-[1200ms] cubic-bezier(0.25, 1, 0.5, 1)"
               style={{
                 left: rect.left + rect.width / 2 - 0.5,
                 top: rect.top,
                 width: rect.width / 2 + 0.5,
                 height: rect.height,
                 transformOrigin: "right center",
-                transform: isOpen ? "rotateY(84deg) scaleX(0.96)" : "rotateY(0deg)",
-                filter: isOpen
-                  ? "brightness(0.7) drop-shadow(-12px 0 16px rgba(0,0,0,0.4))"
-                  : "brightness(1)",
+                transform: isOpen ? "rotateY(115deg) scaleX(0.85)" : "rotateY(0deg)",
+                opacity: isOpen ? 0 : 1,
+                filter: isOpen ? "brightness(0.5)" : "brightness(1)",
               }}
             >
               <img
