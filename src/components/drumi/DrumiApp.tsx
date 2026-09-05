@@ -1,8 +1,6 @@
-import { useState, useCallback } from "react";
-import { DrumiDoorStage } from "./DrumiDoorStage";
-import { DrumiFounderSection } from "./DrumiFounderSection";
-import { DrumiVisionAndCards } from "./DrumiVisionAndCards";
-import { DrumiFooterBar } from "./DrumiFooterBar";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { DrumiThreshold, type DrumiPhase } from "./DrumiThreshold";
+import { DrumiInnerRoom } from "./DrumiInnerRoom";
 import { DrumiModals, type DrumiModalType } from "./DrumiModals";
 import { useDrumiSound } from "../../hooks/useDrumiSound";
 import mockupOriginalImg from "../../assets/drumi/mockup-original.png";
@@ -11,11 +9,57 @@ interface DrumiAppProps {
   onSwitchToAncestors?: () => void;
 }
 
+const TEXT_FADE_MS = 250;
+const DOOR_OPEN_MS = 1500;
+
 export function DrumiApp({ onSwitchToAncestors }: DrumiAppProps) {
+  const [phase, setPhase] = useState<DrumiPhase>("idle");
   const { soundOn, toggleSound, playChime, playDoorOpen } = useDrumiSound();
   const [modalType, setModalType] = useState<DrumiModalType>(null);
   const [wisdomData, setWisdomData] = useState<{ title: string; quote: string } | null>(null);
   const [showOriginalComparison, setShowOriginalComparison] = useState(false);
+  const enteringRef = useRef(false);
+  const timers = useRef<number[]>([]);
+
+  const handleEnter = useCallback(() => {
+    if (phase !== "idle" || enteringRef.current) return;
+    enteringRef.current = true;
+    playDoorOpen();
+
+    timers.current.push(
+      window.setTimeout(() => {
+        setPhase("opening");
+      }, TEXT_FADE_MS)
+    );
+
+    timers.current.push(
+      window.setTimeout(() => {
+        setPhase("entering");
+      }, TEXT_FADE_MS + DOOR_OPEN_MS)
+    );
+  }, [phase, playDoorOpen]);
+
+  const handleArrived = useCallback(() => {
+    setPhase("inside");
+  }, []);
+
+  const handleReturnToThreshold = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    enteringRef.current = false;
+    setPhase("idle");
+  }, []);
+
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+
+  // Keyboard shortcut: Enter key opens the doors
+  useEffect(() => {
+    if (phase !== "idle") return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Enter") handleEnter();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [phase, handleEnter]);
 
   const handleOpenFounderStory = useCallback(() => {
     playChime(528);
@@ -41,22 +85,15 @@ export function DrumiApp({ onSwitchToAncestors }: DrumiAppProps) {
     [playChime]
   );
 
-  const scrollToFounder = () => {
-    const el = document.getElementById("founder-section");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
   return (
-    <div className="min-h-screen w-full bg-[#ede6df] text-[#342921] selection:bg-[#c9a66b]/30 relative font-['Cormorant_Garamond',serif]">
+    <div className="w-full min-h-screen bg-[#ede6df] text-[#342921] relative font-['Cormorant_Garamond',serif] overflow-x-hidden">
       {/* Top Floating Controls */}
-      <div className="fixed top-4 left-5 z-40 flex items-center gap-2">
+      <div className="fixed top-5 left-6 z-50 flex items-center gap-2.5">
         <button
           type="button"
           onClick={() => setShowOriginalComparison((prev) => !prev)}
-          className="px-3 py-1.5 rounded-full border border-[#c4a9a6] bg-[#fbf7f4]/90 backdrop-blur-md text-[#7d6957] text-[10px] uppercase tracking-[0.2em] font-['Cinzel',serif] shadow-sm hover:bg-white transition-all flex items-center gap-1.5"
-          title="Toggle 1:1 Reference Mockup Overlay"
+          className="px-3.5 py-1.5 rounded-full border border-[#c4a9a6] bg-[#fbf7f4]/90 backdrop-blur-md text-[#7d6957] text-[10px] uppercase tracking-[0.2em] font-['Cinzel',serif] shadow-sm hover:bg-white transition-all flex items-center gap-1.5 cursor-pointer"
+          title="Toggle 1:1 Reference Mockup"
         >
           <span>{showOriginalComparison ? "Hide Mockup" : "Compare with Mockup"}</span>
         </button>
@@ -65,18 +102,23 @@ export function DrumiApp({ onSwitchToAncestors }: DrumiAppProps) {
           <button
             type="button"
             onClick={onSwitchToAncestors}
-            className="px-3 py-1.5 rounded-full border border-[#d8c9be] bg-[#fbf7f4]/80 backdrop-blur-md text-[#8f7b6b] text-[10px] uppercase tracking-[0.16em] font-['Cinzel',serif] shadow-sm hover:bg-white transition-all"
-            title="Switch to Ancestors Room demo"
+            className="px-3.5 py-1.5 rounded-full border border-[#d8c9be] bg-[#fbf7f4]/80 backdrop-blur-md text-[#8f7b6b] text-[10px] uppercase tracking-[0.16em] font-['Cinzel',serif] shadow-sm hover:bg-white transition-all cursor-pointer"
           >
-            Switch to Ancestors Room
+            Ancestors Room
           </button>
         )}
       </div>
 
-      {/* Side-by-side or Modal Comparison with Original Mockup */}
+      {/* Comparison Modal */}
       {showOriginalComparison && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="relative max-w-[520px] max-h-[92vh] overflow-y-auto bg-white p-3 rounded shadow-2xl">
+        <div
+          className="fixed inset-0 z-55 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm"
+          onClick={() => setShowOriginalComparison(false)}
+        >
+          <div
+            className="relative max-w-[500px] max-h-[92vh] overflow-y-auto bg-white p-3 rounded shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex justify-between items-center pb-2 mb-2 border-b border-gray-200">
               <span className="font-['Cinzel',serif] text-xs uppercase tracking-widest text-gray-700">
                 Original Client Mockup Reference
@@ -94,26 +136,30 @@ export function DrumiApp({ onSwitchToAncestors }: DrumiAppProps) {
         </div>
       )}
 
-      {/* Main Page Layout matching mockup */}
-      <main className="w-full max-w-[960px] mx-auto bg-[#ede6df] shadow-[0_0_50px_rgba(0,0,0,0.06)]">
-        {/* Section 1: Hero with 3D Double Doors */}
-        <DrumiDoorStage
+      {/* Phase 1 & 2: Full-Width Threshold / 3D Door Open Walk-Through */}
+      {phase !== "inside" && (
+        <DrumiThreshold
+          phase={phase}
+          soundOn={soundOn}
+          onEnter={handleEnter}
+          onArrived={handleArrived}
+          onToggleSound={toggleSound}
+        />
+      )}
+
+      {/* Phase 3: The Inner Sanctuary Page (Opened after entering) */}
+      {phase === "inside" && (
+        <DrumiInnerRoom
           soundOn={soundOn}
           onToggleSound={toggleSound}
-          onPlayDoorOpen={playDoorOpen}
+          onReturnToThreshold={handleReturnToThreshold}
+          onOpenFounderStory={handleOpenFounderStory}
+          onOpenJournal={handleOpenJournal}
+          onOpenBlog={handleOpenBlog}
+          onFooterItemClick={handleFooterItemClick}
           onPlayChime={playChime}
-          onScrollToFounder={scrollToFounder}
         />
-
-        {/* Section 2: Our Founder */}
-        <DrumiFounderSection onOpenStory={handleOpenFounderStory} />
-
-        {/* Section 3 & 4: Our Vision & Two Luxury Cards */}
-        <DrumiVisionAndCards onOpenJournal={handleOpenJournal} onOpenBlog={handleOpenBlog} />
-
-        {/* Section 5: Luxury Bottom Bar */}
-        <DrumiFooterBar onItemClick={handleFooterItemClick} />
-      </main>
+      )}
 
       {/* Modals & Popups */}
       <DrumiModals
