@@ -1,0 +1,216 @@
+/* Door Open Intro — the threshold overlay.
+   Everything is scoped under #doi-root (an id beats theme class selectors) so a theme's button, image
+   or transition rules can't leak into the door. */
+
+#doi-root,
+#doi-root *,
+#doi-root *::before,
+#doi-root *::after { box-sizing: border-box; transition: none; animation: none; }
+
+#doi-root {
+	position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 2147483001; visibility: visible;
+	overflow: hidden; margin: 0; padding: 0; border: 0;
+	font-size: 16px; line-height: normal; letter-spacing: normal; text-transform: none; text-align: left;
+	color: #3d342a; -webkit-tap-highlight-color: transparent;
+	--doi-fx: 50%; --doi-fy: 50%;
+}
+#doi-root img {
+	display: block; max-width: none; max-height: none; min-width: 0; margin: 0; padding: 0; border: 0;
+	border-radius: 0; box-shadow: none; opacity: 1; user-select: none; -webkit-user-drag: none;
+}
+
+#doi-root .doi-layer,
+#doi-root .doi-cam { position: absolute; top: 0; right: 0; bottom: 0; left: 0; }
+#doi-root .doi-layer { pointer-events: none; }
+#doi-root .doi-btn { pointer-events: auto; }
+#doi-root .doi-cam { overflow: hidden; }
+#doi-root .doi-world { position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform-style: preserve-3d; will-change: transform; }
+
+/* the light filling the room beyond the doorway */
+#doi-root .doi-room {
+	position: absolute; top: 0; right: 0; bottom: 0; left: 0; opacity: 0;
+	background: radial-gradient(ellipse 70% 85% at var(--doi-fx) var(--doi-fy), #fffdf8 0%, #fff6e5 42%, #f7e8cc 100%);
+}
+
+/* golden bubbles: a warm translucent body, a darker gold rim that reads against white light, a highlight */
+#doi-root .doi-p {
+	position: absolute; left: 0; top: 0; border-radius: 50%; opacity: 0; will-change: transform, opacity;
+	background:
+		radial-gradient(circle at 33% 29%, rgba(255,255,255,.95) 0 7%, rgba(255,255,255,0) 17%),
+		radial-gradient(circle, rgba(246,208,138,.34) 0 46%, rgba(206,146,60,.78) 61%, rgba(255,238,200,.95) 67%, rgba(255,230,180,0) 71%);
+	box-shadow: 0 0 18px 3px rgba(236,178,88,.3);
+}
+
+/* tall screens: blurred wall above and below the photo */
+#doi-root .doi-backdrop { position: absolute; overflow: hidden; transform: translateZ(-1px); }
+#doi-root .doi-backdrop img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; filter: blur(22px) brightness(.94); transform: scale(1.06); }
+
+#doi-root .doi-surround,
+#doi-root .doi-leaf { position: absolute; }
+#doi-root .doi-surround,
+#doi-root .doi-backdrop,
+#doi-root .doi-face {
+	-webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+	-webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+}
+#doi-root .doi-canvas { position: absolute; }
+#doi-root .doi-canvas img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+#doi-root .doi-leaf { transform-style: preserve-3d; will-change: transform; }
+#doi-root .doi-face { position: absolute; top: 0; right: 0; bottom: 0; left: 0; overflow: hidden; }
+#doi-root .doi-shade { position: absolute; top: 0; right: 0; bottom: 0; left: 0; opacity: 0; pointer-events: none; }
+#doi-root .doi-leaf--l .doi-shade { background: linear-gradient(90deg, rgba(92,60,28,.5), rgba(92,60,28,.16)); }
+#doi-root .doi-leaf--r .doi-shade { background: linear-gradient(270deg, rgba(92,60,28,.5), rgba(92,60,28,.16)); }
+
+/* the door's thickness: a lit edge that turns toward the light as the leaf swings */
+#doi-root .doi-edge {
+	position: absolute; top: 0; height: 100%;
+	background: linear-gradient(90deg, rgba(194,147,81,0), #c89a55 6%, #f5d99f 34%, #fff4d8 52%, #ecca8a 78%, #b3864a 96%, rgba(179,134,74,0));
+}
+#doi-root .doi-leaf--l .doi-edge { transform-origin: 0 50%; transform: rotateY(90deg); }
+#doi-root .doi-leaf--r .doi-edge { transform-origin: 100% 50%; transform: rotateY(-90deg); }
+
+/* engraved name and tagline on the door face; they catch fire when the glow reaches them */
+#doi-root .doi-mark { position: absolute; left: 0; width: 100%; margin: 0; text-align: center; pointer-events: none; }
+#doi-root .doi-word {
+	margin: 0; font-family: 'Cinzel', 'Trajan Pro', Georgia, serif; font-weight: 500; font-style: normal;
+	letter-spacing: .34em; padding-left: .34em; line-height: 1; text-transform: uppercase;
+	color: #8c6a3b; text-shadow: 0 1px 0 rgba(255,250,236,.8), 0 -1px 0 rgba(92,62,24,.3);
+	transition: color .45s ease, text-shadow .45s ease;
+}
+#doi-root .doi-tag {
+	margin: 0; font-family: 'Cormorant Garamond', Garamond, Georgia, serif; font-style: italic; font-weight: 400;
+	line-height: 1.35; letter-spacing: normal; color: #7a5d3b;
+	text-shadow: 0 1px 0 rgba(255,250,236,.75);
+	transition: color .45s ease, text-shadow .45s ease;
+}
+#doi-root.is-lit .doi-word {
+	color: #fff2d2;
+	text-shadow: 0 0 .1em rgba(255,240,205,1), 0 0 .32em rgba(255,204,128,.9), 0 0 .8em rgba(255,176,86,.55);
+}
+#doi-root.is-lit .doi-tag {
+	color: #fff6e2;
+	text-shadow: 0 0 .25em rgba(255,226,170,.95), 0 0 .8em rgba(255,190,110,.55);
+}
+
+#doi-root .doi-seam {
+	position: absolute; width: 4px; opacity: 0; border-radius: 3px; pointer-events: none;
+	background: linear-gradient(180deg, rgba(255,248,225,0), #fff5d8 10%, #fffbf1 50%, #fff5d8 90%, rgba(255,248,225,0));
+	box-shadow: 0 0 16px 5px rgba(255,226,165,.8), 0 0 60px 18px rgba(255,208,135,.38);
+}
+#doi-root .doi-bloom {
+	position: absolute; top: 0; right: 0; bottom: 0; left: 0; opacity: 0; pointer-events: none; mix-blend-mode: screen;
+	background: radial-gradient(ellipse 34% 56% at var(--doi-fx) var(--doi-fy), rgba(255,251,236,.96) 0%, rgba(255,234,188,.56) 38%, rgba(255,214,150,.16) 68%, rgba(255,214,150,0) 100%);
+}
+
+/* the button, standing in the lower part of the door */
+#doi-root .doi-cta { position: absolute; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -50%); }
+#doi-root .doi-btn,
+#doi-root .doi-btn:hover,
+#doi-root .doi-btn:focus,
+#doi-root .doi-btn:active {
+	position: relative; overflow: hidden;
+	display: inline-flex; align-items: center; justify-content: center; gap: .7em; margin: 0; cursor: pointer; white-space: nowrap;
+	padding: .95em 2.6em; min-height: 0; width: auto; height: auto; border-radius: 999px;
+	border: 1px solid rgba(232,208,196,.4); background: var(--doi-btn-bg, #4b2a18); color: #fff;
+	font-family: 'Cinzel', 'Trajan Pro', Georgia, serif; font-size: 1em; font-weight: 500; font-style: normal;
+	line-height: 1.2; letter-spacing: .26em; text-transform: uppercase; text-decoration: none; text-shadow: none;
+	box-shadow: 0 10px 28px rgba(40,22,12,.4), inset 0 1px 0 rgba(255,255,255,.14);
+	outline: none;
+	animation: doi-in .7s ease both, doi-btn-pulse 3.2s ease-in-out .9s infinite;
+}
+#doi-root .doi-btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
+#doi-root .doi-btn:focus-visible { outline: 2px solid #fff4dc; outline-offset: 4px; }
+#doi-root .doi-btn::after {
+	content: ''; position: absolute; top: 0; left: 0; width: 32%; height: 100%; pointer-events: none;
+	background: linear-gradient(120deg, transparent, rgba(255,222,165,.5), transparent);
+	animation: doi-btn-shine 3.6s ease-in-out 1.3s infinite;
+}
+@keyframes doi-btn-pulse {
+	0%, 100% { transform: translateY(0); box-shadow: 0 10px 28px rgba(40,22,12,.4), inset 0 1px 0 rgba(255,255,255,.14), 0 0 0 rgba(255,206,140,0); }
+	50% { transform: translateY(-3px); box-shadow: 0 15px 34px rgba(40,22,12,.46), inset 0 1px 0 rgba(255,255,255,.16), 0 0 18px 5px rgba(255,206,140,.4); }
+}
+@keyframes doi-btn-shine {
+	0% { transform: translateX(-170%) skewX(-20deg); }
+	100% { transform: translateX(400%) skewX(-20deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+	#doi-root .doi-btn { animation: doi-in .7s ease both; }
+	#doi-root .doi-btn::after { animation: none; }
+}
+#doi-root .doi-btn svg { width: 1.15em; height: 1.15em; flex: none; }
+#doi-root .doi-btn,
+#doi-root .doi-btn svg { transition: background-color .25s ease, transform .25s ease, box-shadow .25s ease; }
+#doi-root .doi-btn:hover svg { transform: translateX(3px); }
+#doi-root .doi-caption {
+	margin: 1.1em 0 0; font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 700; font-style: normal;
+	line-height: 1.35; letter-spacing: .04em; text-transform: none; text-align: center; white-space: nowrap;
+	color: #3a2716;
+	text-shadow: 0 1px 0 rgba(255,255,255,.7), 0 0 10px rgba(255,255,255,.85), 0 0 22px rgba(255,255,255,.6);
+}
+
+#doi-root .doi-skip,
+#doi-root .doi-skip:hover,
+#doi-root .doi-skip:focus {
+	position: absolute; right: 18px; bottom: 16px; margin: 0; padding: 8px 12px; min-height: 0; width: auto; height: auto;
+	border: 0; border-radius: 999px; background: rgba(255,250,240,.28); color: #4c3d2d; cursor: pointer;
+	font-family: 'Cinzel', 'Trajan Pro', Georgia, serif; font-size: 11px; font-weight: 500; line-height: 1.2;
+	letter-spacing: .2em; text-transform: uppercase; text-decoration: none; text-shadow: 0 1px 0 rgba(255,250,238,.7);
+	box-shadow: none; opacity: .7; outline: none;
+}
+#doi-root .doi-skip:hover { opacity: 1; background: rgba(255,250,240,.55); }
+#doi-root .doi-skip:focus-visible { opacity: 1; outline: 2px solid #9a7470; outline-offset: 2px; }
+
+/* the name, button and caption settle in over the still that was on screen while the page loaded */
+@keyframes doi-in { from { opacity: 0; } to { opacity: 1; } }
+#doi-root .doi-mark,
+#doi-root .doi-caption { animation: doi-in .7s ease both; }
+#doi-root .doi-caption { animation-delay: .25s; }
+
+@media (prefers-reduced-motion: reduce) {
+	#doi-root .doi-mark,
+	#doi-root .doi-caption { animation: none; }
+}
+
+/* skip intro: clearly visible over the warm door photo, on phones and desktops alike (same dark pill as the door button) */
+#doi-root .doi-skip,
+#doi-root .doi-skip:hover,
+#doi-root .doi-skip:focus {
+	right: 20px;
+	bottom: 20px;
+	padding: 11px 20px;
+	border: 1px solid rgba(255, 240, 215, .7);
+	background: rgba(40, 26, 16, .72);
+	color: #fbf3e6;
+	font-size: 13px;
+	font-weight: 600;
+	text-shadow: none;
+	box-shadow: 0 6px 18px rgba(0, 0, 0, .3);
+	-webkit-backdrop-filter: blur(6px);
+	backdrop-filter: blur(6px);
+	opacity: 1;
+}
+#doi-root .doi-skip:hover {
+	background: rgba(40, 26, 16, .9);
+	border-color: rgba(255, 240, 215, .95);
+}
+@media (max-width: 767px) {
+	#doi-root .doi-skip,
+	#doi-root .doi-skip:hover,
+	#doi-root .doi-skip:focus {
+		right: 16px;
+		bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+		padding: 11px 18px;
+		font-size: 12px;
+	}
+}
+
+/* no DRUMI lettering on the door (the client's wish): the icon says it. Kept for screen readers */
+#doi-root .doi-word {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	overflow: hidden !important;
+	clip: rect(0 0 0 0) !important;
+	clip-path: inset(50%) !important;
+	white-space: nowrap !important;
+}
