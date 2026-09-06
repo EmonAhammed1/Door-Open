@@ -8,6 +8,7 @@
     "build": "vite build",
     "build:overlay": "vite build --mode overlay",
     "build:all": "vite build && vite build --mode overlay",
+    "build:plugin": "python package_plugin.py",
     "preview": "vite preview"
   },
   "dependencies": {
