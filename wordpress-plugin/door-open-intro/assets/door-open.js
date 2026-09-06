@@ -21,7 +21,15 @@
   var Sound = (function () {
     var ctx = null, master = null, noiseBuf = null, crackleTimer = null, running = false;
 
+    function isEnabled() {
+      if (cfg.soundEnabled === false || cfg.soundEnabled === 0 || cfg.soundEnabled === '0' || cfg.soundEnabled === 'false' || !cfg.soundEnabled) {
+        return false;
+      }
+      return true;
+    }
+
     function ensure() {
+      if (!isEnabled()) return null;
       if (ctx) return ctx;
       var AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return null;
@@ -49,7 +57,7 @@
     }
 
     function crackle() {
-      if (!ctx || !running) return;
+      if (!isEnabled() || !ctx || !running) return;
       var src = ctx.createBufferSource();
       src.buffer = noise(ctx);
       src.playbackRate.value = 2 + Math.random() * 3;
@@ -68,7 +76,7 @@
     }
 
     function start() {
-      if (cfg.soundEnabled === false || cfg.soundEnabled === 0 || cfg.soundEnabled === '0') return;
+      if (!isEnabled()) return;
       var c = ensure();
       if (!c) return;
       if (c.state === 'suspended') c.resume();
@@ -132,6 +140,8 @@
     }
 
     function swell() {
+      // 100% SILENT if sound is disabled in settings!
+      if (!isEnabled()) return;
       var c = ensure();
       if (!c) return;
       if (c.state === 'suspended') c.resume();
@@ -169,13 +179,36 @@
       o.stop(t + 5.0);
     }
 
+    function toggle() {
+      if (!isEnabled()) return;
+      running ? stop() : start();
+    }
+
     function bind() {
+      if (!isEnabled()) {
+        $$('[data-tar-sound]').forEach(function (b) {
+          b.style.display = 'none';
+        });
+        return;
+      }
       $$('[data-tar-sound]').forEach(function (b) {
-        b.addEventListener('click', function () { running ? stop() : start(); });
+        if (b._doiBound) return;
+        b._doiBound = true;
+        b.addEventListener('click', function () {
+          toggle();
+        });
       });
     }
 
-    return { start: start, stop: stop, swell: swell, bind: bind };
+    return {
+      start: start,
+      stop: stop,
+      swell: swell,
+      bind: bind,
+      isEnabled: isEnabled,
+      isRunning: function () { return running; },
+      toggle: toggle
+    };
   })();
 
   /* ------------------------------------------------------------------
@@ -413,14 +446,18 @@
     });
 
     function toggleSound() {
-      Sound.enabled = !Sound.enabled;
-      document.body.classList.toggle('tar-sound-on', Sound.enabled);
-      var sBtn = $('[data-tar-sound]', root);
-      if (sBtn) sBtn.setAttribute('aria-pressed', Sound.enabled ? 'true' : 'false');
+      Sound.toggle();
     }
 
     var soundBtn = $('[data-tar-sound]', root);
-    if (soundBtn) soundBtn.addEventListener('click', toggleSound);
+    if (soundBtn) {
+      if (!Sound.isEnabled()) {
+        soundBtn.style.display = 'none';
+      } else if (!soundBtn._doiBound) {
+        soundBtn._doiBound = true;
+        soundBtn.addEventListener('click', toggleSound);
+      }
+    }
 
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' && !busy && root && !root.classList.contains('is-done')) {
@@ -482,7 +519,7 @@
             '<span class="tar-logo__tag">A sanctuary for your dreams</span>' +
           '</div>' +
           '<nav class="tar-topbar__nav">' +
-            '<button class="tar-nav-link" type="button" data-tar-sound aria-pressed="false">Sound <span class="tar-eq"><i></i><i></i><i></i><i></i></span></button>' +
+            (Sound.isEnabled() ? '<button class="tar-nav-link" type="button" data-tar-sound aria-pressed="false">Sound <span class="tar-eq"><i></i><i></i><i></i><i></i></span></button>' : '') +
           '</nav>' +
         '</header>' +
         '<div class="tar-threshold__content">' +

@@ -3,7 +3,7 @@
  * Plugin Name:  Door Open Intro
  * Plugin URI:   https://github.com/EmonAhammed1/Door-Open
  * Description:  Cinematic 3D door-opening hero animation & DRUMI sanctuary landing sections for WordPress. Pure CSS3 3D transforms & Web Audio API. Compatible with Elementor, Gutenberg, and all themes.
- * Version:      3.4.7
+ * Version:      3.4.8
  * Author:       Door Open
  * License:      GPL-2.0-or-later
  * Text Domain:  door-open-intro
@@ -12,7 +12,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-define( 'DOI_VERSION',    '3.4.7' );
+define( 'DOI_VERSION',    '3.4.8' );
 define( 'DOI_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DOI_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'DOI_OPTIONS',    'doi_settings' );
@@ -277,7 +277,9 @@ function doi_get_threshold_html( $args = [] ) {
             <span class="tar-logo__tag">A sanctuary for your dreams</span>
           </div>
           <nav class="tar-topbar__nav">
+            <?php if ( ! empty( doi_get( 'sound_enabled' ) ) ) : ?>
             <button class="tar-nav-link" type="button" data-tar-sound aria-pressed="false">Sound <span class="tar-eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
+            <?php endif; ?>
           </nav>
         </header>
 
@@ -857,10 +859,13 @@ function doi_settings_page() {
             </p>
           </div>
 
-          <div class="doi-toggle-row">
+          <div class="doi-toggle-row" style="background:#fdfaf7; border-radius:8px; padding:16px; margin:14px 0; border:1px solid #ebd8c8;">
             <div class="doi-toggle-info">
-              <strong>Procedural Ambient Sound (Web Audio)</strong>
-              <p>Atmospheric harmonic swell when door opens — synthesized 100% in-browser with zero audio file downloads.</p>
+              <strong style="color:#42352d; font-size:1.05em;">🔊 Door Open Sound Effects & Audio (দরজা খোলার সাউন্ড / শব্দ)</strong>
+              <p style="color:#646970; font-size:0.92em; margin-top:4px; line-height:1.5;">
+                Atmospheric sound effects when opening doors and ambient background audio.
+                <br><span style="color:#9e3d36; font-weight:600;">⚠️ Turn OFF to make door opening 100% silent (এটি বন্ধ রাখলে দরজা খোলার সময় কোনো সাউন্ড বা শব্দ হবে না)।</span>
+              </p>
             </div>
             <label class="doi-switch">
               <input type="checkbox" name="<?php echo DOI_OPTIONS; ?>[sound_enabled]" value="1" <?php checked( $opts['sound_enabled'], 1 ); ?>>
