@@ -3,7 +3,7 @@
  * Plugin Name:  Door Open Intro
  * Plugin URI:   https://github.com/EmonAhammed1/Door-Open
  * Description:  Cinematic 3D door-opening hero animation & DRUMI sanctuary landing sections for WordPress. Pure CSS3 3D transforms & Web Audio API. Compatible with Elementor, Gutenberg, and all themes.
- * Version:      3.4.0
+ * Version:      3.4.1
  * Author:       Door Open
  * License:      GPL-2.0-or-later
  * Text Domain:  door-open-intro
@@ -12,7 +12,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-define( 'DOI_VERSION',    '3.4.0' );
+define( 'DOI_VERSION',    '3.4.1' );
 define( 'DOI_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DOI_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'DOI_OPTIONS',    'doi_settings' );
@@ -319,23 +319,26 @@ function doi_get_threshold_html( $args = [] ) {
 
 // ─── 3 Landing Page Sections (Founder, Vision, Cards & Footer) ────────────────
 function doi_get_landing_sections_html( $custom_opts = [] ) {
-    $opts = wp_parse_args( $custom_opts, get_option( DOI_OPTIONS, [] ) );
-    $opts = wp_parse_args( $opts, doi_defaults() );
+    $saved = get_option( DOI_OPTIONS, [] );
+    $opts  = wp_parse_args( $saved, doi_defaults() );
+    if ( ! empty( $custom_opts ) ) {
+        $opts = wp_parse_args( $custom_opts, $opts );
+    }
 
     ob_start();
     ?>
     <div class="doi-landing-sections" id="doi-landing-sections">
       <?php
-      if ( ! empty( $opts['founder_enabled'] ) ) {
+      if ( ! isset( $opts['founder_enabled'] ) || ! empty( $opts['founder_enabled'] ) ) {
           echo doi_get_founder_html( $opts );
       }
-      if ( ! empty( $opts['vision_enabled'] ) ) {
+      if ( ! isset( $opts['vision_enabled'] ) || ! empty( $opts['vision_enabled'] ) ) {
           echo doi_get_vision_html( $opts );
       }
-      if ( ! empty( $opts['cards_enabled'] ) ) {
+      if ( ! isset( $opts['cards_enabled'] ) || ! empty( $opts['cards_enabled'] ) ) {
           echo doi_get_cards_html( $opts );
       }
-      if ( ! empty( $opts['footer_enabled'] ) ) {
+      if ( ! isset( $opts['footer_enabled'] ) || ! empty( $opts['footer_enabled'] ) ) {
           echo doi_get_footer_bar_html( $opts );
       }
       ?>
@@ -708,7 +711,7 @@ function doi_sanitize_settings( $in ) {
         'room_image_url'     => esc_url_raw( $in['room_image_url'] ?? ( DOI_PLUGIN_URL . 'assets/room-interior.jpg' ) ),
 
         // Landing Sections Enabled
-        'sections_enabled'   => empty( $in['sections_enabled'] )   ? 0 : 1,
+        'sections_enabled'   => isset( $in['sections_enabled'] ) ? ( empty( $in['sections_enabled'] ) ? 0 : 1 ) : 1,
 
         // Section 1: Our Founder
         'founder_enabled'    => empty( $in['founder_enabled'] )    ? 0 : 1,
@@ -894,6 +897,17 @@ function doi_settings_page() {
             <label for="doi_room_image_url">Interior Room / Lake Artwork URL</label>
             <input type="text" id="doi_room_image_url" name="<?php echo DOI_OPTIONS; ?>[room_image_url]"
                    value="<?php echo esc_attr( $opts['room_image_url'] ); ?>" placeholder="<?php echo esc_attr( DOI_PLUGIN_URL . 'assets/room-interior.jpg' ); ?>">
+          </div>
+
+          <div class="doi-toggle-row" style="background:#fcfaf7; border-top:1px solid #eee; padding-top:14px; margin-top:12px;">
+            <div class="doi-toggle-info">
+              <strong>Enable All Landing Page Sections (Founder, Vision, Cards, Footer)</strong>
+              <p>Renders the editorial DRUMI content sections directly underneath the door open hero on your homepage.</p>
+            </div>
+            <label class="doi-switch">
+              <input type="checkbox" name="<?php echo DOI_OPTIONS; ?>[sections_enabled]" value="1" <?php checked( $opts['sections_enabled'], 1 ); ?>>
+              <span class="doi-slider"></span>
+            </label>
           </div>
         </div>
 

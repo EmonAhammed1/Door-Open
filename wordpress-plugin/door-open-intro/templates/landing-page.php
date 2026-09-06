@@ -64,9 +64,7 @@ echo doi_get_threshold_html( [
 ] );
 
 // 2. The 3 Sections Underneath (Founder, Vision, Cards & Footer)
-if ( doi_get( 'sections_enabled' ) ) {
-    echo doi_get_landing_sections_html();
-}
+echo doi_get_landing_sections_html();
 
 wp_footer();
 ?>
