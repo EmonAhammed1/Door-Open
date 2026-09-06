@@ -3,7 +3,7 @@
  * Plugin Name:  Door Open Intro
  * Plugin URI:   https://github.com/EmonAhammed1/Door-Open
  * Description:  Cinematic 3D door-opening hero animation & DRUMI sanctuary landing sections for WordPress. Pure CSS3 3D transforms & Web Audio API. Compatible with Elementor, Gutenberg, and all themes.
- * Version:      3.4.1
+ * Version:      3.4.2
  * Author:       Door Open
  * License:      GPL-2.0-or-later
  * Text Domain:  door-open-intro
@@ -12,7 +12,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-define( 'DOI_VERSION',    '3.4.1' );
+define( 'DOI_VERSION',    '3.4.2' );
 define( 'DOI_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DOI_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'DOI_OPTIONS',    'doi_settings' );
@@ -359,25 +359,24 @@ function doi_get_founder_html( $opts ) {
     ob_start();
     ?>
     <section id="doi-founder" class="doi-sec doi-founder-sec">
-      <div class="doi-container">
-        <div class="doi-founder-grid">
-          <!-- Left Column: Editorial Copy -->
-          <div class="doi-founder-copy">
+      <div class="doi-founder-split">
+        <!-- Left Column: Editorial Copy -->
+        <div class="doi-founder-left">
+          <div class="doi-founder-content">
             <span class="doi-kicker"><?php echo $kicker; ?></span>
-            <h2 class="doi-display-heading"><?php echo $title; ?></h2>
-            <p class="doi-body-text"><?php echo $text; ?></p>
-            <a href="<?php echo $btn_url; ?>" class="doi-link-underlined" style="cursor:pointer;">
-              <span><?php echo $btn_text; ?></span>
-            </a>
-          </div>
-
-          <!-- Right Column: Founder Window Photo -->
-          <div class="doi-founder-media">
-            <div class="doi-founder-img-card" <?php if ( ! empty( $btn_url ) && $btn_url !== '#' ) { echo 'onclick="window.location.href=\'' . esc_url( $btn_url ) . '\';" style="cursor:pointer;"'; } ?>>
-              <img src="<?php echo $img_url; ?>" alt="<?php echo esc_attr( $kicker ); ?>" loading="lazy">
-              <div class="doi-img-inner-shadow" aria-hidden="true"></div>
+            <h2 class="doi-founder-title"><?php echo $title; ?></h2>
+            <p class="doi-founder-desc"><?php echo $text; ?></p>
+            <div class="doi-founder-action">
+              <a href="<?php echo $btn_url; ?>" class="doi-link-underlined" style="cursor:pointer;">
+                <span><?php echo $btn_text; ?></span>
+              </a>
             </div>
           </div>
+        </div>
+
+        <!-- Right Column: Full-Bleed Cover Photo -->
+        <div class="doi-founder-right" <?php if ( ! empty( $btn_url ) && $btn_url !== '#' ) { echo 'onclick="window.location.href=\'' . esc_url( $btn_url ) . '\';" style="cursor:pointer;"'; } ?>>
+          <img src="<?php echo $img_url; ?>" alt="<?php echo esc_attr( $kicker ); ?>" loading="lazy" class="doi-founder-cover-img">
         </div>
       </div>
     </section>
