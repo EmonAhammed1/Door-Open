@@ -3,7 +3,7 @@
  * Plugin Name:  Door Open Intro
  * Plugin URI:   https://github.com/EmonAhammed1/Door-Open
  * Description:  Cinematic 3D door-opening hero animation & DRUMI sanctuary landing sections for WordPress. Pure CSS3 3D transforms & Web Audio API. Compatible with Elementor, Gutenberg, and all themes.
- * Version:      3.4.4
+ * Version:      3.4.5
  * Author:       Door Open
  * License:      GPL-2.0-or-later
  * Text Domain:  door-open-intro
@@ -12,7 +12,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-define( 'DOI_VERSION',    '3.4.4' );
+define( 'DOI_VERSION',    '3.4.5' );
 define( 'DOI_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DOI_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'DOI_OPTIONS',    'doi_settings' );
@@ -55,13 +55,13 @@ function doi_defaults() {
         'cards_enabled'       => 1,
         // Card 1 (Dream Journal)
         'card1_title'         => 'THE DREAM JOURNAL',
-        'card1_text'          => 'Your space to remember, reflect and receive.',
+        'card1_text'          => "Your space to remember,\nreflect and receive.",
         'card1_btn_text'      => 'DISCOVER THE JOURNAL',
         'card1_btn_url'       => '#dream-journal',
         'card1_image_url'     => DOI_PLUGIN_URL . 'assets/card-journal.png',
         // Card 2 (Blog)
         'card2_title'         => 'THE BLOG',
-        'card2_text'          => 'Insights, inspiration and guidance for your journey.',
+        'card2_text'          => "Insights, inspiration and\nguidance for your journey.",
         'card2_btn_text'      => 'EXPLORE THE BLOG',
         'card2_btn_url'       => '#blog',
         'card2_image_url'     => DOI_PLUGIN_URL . 'assets/card-blog.png',
@@ -410,13 +410,13 @@ function doi_get_vision_html( $opts ) {
 // ─── Section 3: Feature Cards (Dream Journal & Blog) ──────────────────────────
 function doi_get_cards_html( $opts ) {
     $card1_title    = esc_html( $opts['card1_title'] ?? 'THE DREAM JOURNAL' );
-    $card1_text     = esc_html( $opts['card1_text'] ?? 'Your space to remember, reflect and receive.' );
+    $card1_text     = nl2br( esc_html( $opts['card1_text'] ?? "Your space to remember,\nreflect and receive." ) );
     $card1_btn_text = esc_html( $opts['card1_btn_text'] ?? 'DISCOVER THE JOURNAL' );
     $card1_btn_url  = esc_url( $opts['card1_btn_url'] ?? '#dream-journal' );
     $card1_img      = esc_url( $opts['card1_image_url'] ?: DOI_PLUGIN_URL . 'assets/card-journal.png' );
 
     $card2_title    = esc_html( $opts['card2_title'] ?? 'THE BLOG' );
-    $card2_text     = esc_html( $opts['card2_text'] ?? 'Insights, inspiration and guidance for your journey.' );
+    $card2_text     = nl2br( esc_html( $opts['card2_text'] ?? "Insights, inspiration and\nguidance for your journey." ) );
     $card2_btn_text = esc_html( $opts['card2_btn_text'] ?? 'EXPLORE THE BLOG' );
     $card2_btn_url  = esc_url( $opts['card2_btn_url'] ?? '#blog' );
     $card2_img      = esc_url( $opts['card2_image_url'] ?: DOI_PLUGIN_URL . 'assets/card-blog.png' );
@@ -424,16 +424,18 @@ function doi_get_cards_html( $opts ) {
     ob_start();
     ?>
     <section id="doi-cards" class="doi-sec doi-cards-sec">
-      <div class="doi-container">
+      <div class="doi-cards-container">
         <div class="doi-cards-grid">
           <!-- Card 1: THE DREAM JOURNAL -->
           <div class="doi-feature-card doi-card-journal" style="background-image: url('<?php echo $card1_img; ?>');" <?php if ( ! empty( $card1_btn_url ) && $card1_btn_url !== '#' ) { echo 'onclick="window.location.href=\'' . esc_url( $card1_btn_url ) . '\';" style="background-image: url(\'' . $card1_img . '\'); cursor:pointer;"'; } ?>>
             <div class="doi-card-overlay doi-card-overlay--rose" aria-hidden="true"></div>
             <div class="doi-card-content">
               <div class="doi-card-icon" aria-hidden="true">
-                <svg viewBox="0 0 40 48" fill="none" stroke="currentColor" stroke-width="2.2">
-                  <path d="M20 2C20 2 6 22 6 32C6 39.732 12.268 46 20 46C27.732 46 34 39.732 34 32C34 22 20 2 20 2Z" />
-                  <circle cx="20" cy="32" r="6" />
+                <svg viewBox="0 0 32 40" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 2.5 C16 2.5 5 18 5 26.5 C5 32.8 10 38 16 38 C22 38 27 32.8 27 26.5 C27 18 16 2.5 16 2.5 Z" />
+                  <circle cx="16" cy="26.5" r="5.5" />
+                  <circle cx="16" cy="26.5" r="2" fill="currentColor" />
+                  <line x1="16" y1="12" x2="16" y2="21" />
                 </svg>
               </div>
               <h3 class="doi-card-title"><?php echo $card1_title; ?></h3>
@@ -449,10 +451,10 @@ function doi_get_cards_html( $opts ) {
             <div class="doi-card-overlay doi-card-overlay--sand" aria-hidden="true"></div>
             <div class="doi-card-content">
               <div class="doi-card-icon doi-card-icon--dark" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                  <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" />
-                  <line x1="16" y1="8" x2="2" y2="22" />
-                  <line x1="17.5" y1="15" x2="9" y2="15" />
+                <svg viewBox="0 0 28 36" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 3 C15 4 8.5 10.5 7 18 C6.2 22 7.2 26.5 8.5 29.5 L13 24 C17 18 21.5 12 22 3 Z" />
+                  <path d="M7.5 28 L3.5 33" />
+                  <path d="M13 15 C10.5 17.5 9.5 20.5 8.5 24" />
                 </svg>
               </div>
               <h3 class="doi-card-title doi-card-title--dark"><?php echo $card2_title; ?></h3>
@@ -485,7 +487,7 @@ function doi_get_footer_bar_html( $opts ) {
     ob_start();
     ?>
     <footer id="doi-footer-bar" class="doi-footer-bar">
-      <div class="doi-container">
+      <div class="doi-cards-container">
         <div class="doi-footer-items">
           <!-- Item 1: SLOW DOWN -->
           <a href="<?php echo $m1_u; ?>" class="doi-footer-item" style="text-decoration:none;">
@@ -501,9 +503,7 @@ function doi_get_footer_bar_html( $opts ) {
           <!-- Item 2: LISTEN WITHIN -->
           <a href="<?php echo $m2_u; ?>" class="doi-footer-item" style="text-decoration:none;">
             <svg class="doi-footer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" />
-              <circle cx="12" cy="12" r="5" stroke-dasharray="2 2" />
-              <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+              <circle cx="12" cy="12" r="8" />
             </svg>
             <span class="doi-footer-label"><?php echo $m2; ?></span>
           </a>
@@ -528,12 +528,12 @@ function doi_get_footer_bar_html( $opts ) {
           <!-- Item 4: RETURN TO YOU -->
           <a href="<?php echo $m4_u; ?>" class="doi-footer-item" style="text-decoration:none;">
             <svg class="doi-footer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" />
-              <circle cx="12" cy="12" r="3" />
+              <circle cx="12" cy="12" r="8" />
             </svg>
             <span class="doi-footer-label"><?php echo $m4; ?></span>
           </a>
         </div>
+      </div>
     </footer>
     <?php
     return ob_get_clean();
