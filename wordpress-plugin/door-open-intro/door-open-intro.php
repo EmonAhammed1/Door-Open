@@ -26,6 +26,7 @@ function doi_defaults() {
         'widget_enabled'      => 1,
         'sound_enabled'       => 1,
         'session_once'        => 0,
+        'target_slugs'        => 'home',
         'button_text'         => 'JOIN THE JOURNEY',
         'button_subtext'      => 'STEP INTO YOUR INNER WORLD',
         'preload_url'         => '',
@@ -68,16 +69,75 @@ function doi_defaults() {
         // Sacred Footer Bar
         'footer_enabled'      => 1,
         'footer_mantra1'      => 'SLOW DOWN',
+        'footer_mantra1_url'  => '#',
         'footer_mantra2'      => 'LISTEN WITHIN',
+        'footer_mantra2_url'  => '#',
         'footer_brand'        => 'DRUMI',
+        'footer_brand_url'    => '/',
         'footer_mantra3'      => 'TRUST THE MESSAGE',
+        'footer_mantra3_url'  => '#',
         'footer_mantra4'      => 'RETURN TO YOU',
+        'footer_mantra4_url'  => '#',
     ];
 }
 
 function doi_get( $key ) {
     $opts = wp_parse_args( get_option( DOI_OPTIONS, [] ), doi_defaults() );
     return $opts[ $key ] ?? null;
+}
+
+// ─── Target Page Detection (/ and /home) ─────────────────────────────────────
+function doi_is_target_page() {
+    if ( is_admin() ) return false;
+
+    // Standard WordPress Front Page or Home check
+    if ( is_front_page() || is_home() ) {
+        return true;
+    }
+
+    if ( function_exists( 'is_page' ) && ( is_page( 'home' ) || is_page( 'homepage' ) || is_page( 'front-page' ) ) ) {
+        return true;
+    }
+
+    // Check request path for root "/" or "/home" or "/home/"
+    $uri  = $_SERVER['REQUEST_URI'] ?? '';
+    $path = trim( parse_url( $uri, PHP_URL_PATH ), '/' );
+
+    if ( $path === '' || strtolower( $path ) === 'home' || strtolower( $path ) === 'index.php' ) {
+        return true;
+    }
+
+    // Also check custom slugs configured in settings if any
+    $target_slugs = doi_get( 'target_slugs' );
+    if ( ! empty( $target_slugs ) ) {
+        $slugs = array_filter( array_map( 'trim', explode( ',', strtolower( $target_slugs ) ) ) );
+        if ( in_array( strtolower( $path ), $slugs, true ) ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// ─── Homepage Takeover Template Filter ────────────────────────────────────────
+// When visiting site root (/) or /home, serve the pure DRUMI Canvas landing page directly!
+// Bypasses Astra's theme header, footer, and default blog archive.
+add_filter( 'template_include', 'doi_homepage_template', 999 );
+function doi_homepage_template( $template ) {
+    if ( is_admin() ) return $template;
+    if ( ! doi_get( 'site_intro_enabled' ) ) return $template;
+
+    $mode = doi_get( 'display_mode' ) ?: 'hero_landing';
+    if ( $mode !== 'hero_landing' ) return $template;
+
+    if ( doi_is_target_page() ) {
+        $custom_tpl = DOI_PLUGIN_DIR . 'templates/landing-page.php';
+        if ( file_exists( $custom_tpl ) ) {
+            return $custom_tpl;
+        }
+    }
+
+    return $template;
 }
 
 // ─── Enqueue Frontend Assets (CSS + JS) ──────────────────────────────────────
@@ -131,33 +191,35 @@ function doi_enqueue_frontend_assets() {
 }
 
 // ─── Frontend Rendering Hook ──────────────────────────────────────────────────
-// Placed in wp_footer or page template
+// Placed in wp_footer for overlay mode or fallback
 add_action( 'wp_footer', 'doi_render_site_intro_overlay', 1 );
 function doi_render_site_intro_overlay() {
     if ( is_admin() ) return;
     if ( ! doi_get( 'site_intro_enabled' ) ) return;
 
-    $mode      = doi_get( 'display_mode' ) ?: 'hero_landing';
-    $is_hero   = ( $mode === 'hero_landing' );
-    $door_img  = doi_get( 'door_image_url' ) ?: DOI_PLUGIN_URL . 'assets/threshold-doors.jpg';
-    $room_img  = doi_get( 'room_image_url' ) ?: DOI_PLUGIN_URL . 'assets/room-interior.jpg';
-    $btn_text  = doi_get( 'button_text' )     ?: 'JOIN THE JOURNEY';
-    $url       = doi_get( 'preload_url' )     ?: '';
-    $skip_key  = doi_get( 'session_once' )    ? 'doi_session_entered' : '';
+    $mode = doi_get( 'display_mode' ) ?: 'hero_landing';
 
-    // Render Hero Door
-    echo doi_get_threshold_html( [
-        'door_img' => $door_img,
-        'room_img' => $room_img,
-        'btn_text' => $btn_text,
-        'url'      => $url,
-        'skip_key' => $skip_key,
-        'is_hero'  => $is_hero,
-    ] );
+    // If on homepage / /home and hero_landing mode is active, landing-page.php has already rendered everything cleanly!
+    if ( $mode === 'hero_landing' && doi_is_target_page() ) {
+        return;
+    }
 
-    // In Hero Landing mode, render the 3 sections directly underneath the door hero
-    if ( $is_hero && doi_get( 'sections_enabled' ) ) {
-        echo doi_get_landing_sections_html();
+    // Otherwise render overlay mode (if selected)
+    if ( $mode === 'overlay_intro' ) {
+        $door_img  = doi_get( 'door_image_url' ) ?: DOI_PLUGIN_URL . 'assets/threshold-doors.jpg';
+        $room_img  = doi_get( 'room_image_url' ) ?: DOI_PLUGIN_URL . 'assets/room-interior.jpg';
+        $btn_text  = doi_get( 'button_text' )     ?: 'JOIN THE JOURNEY';
+        $url       = doi_get( 'preload_url' )     ?: '';
+        $skip_key  = doi_get( 'session_once' )    ? 'doi_session_entered' : '';
+
+        echo doi_get_threshold_html( [
+            'door_img' => $door_img,
+            'room_img' => $room_img,
+            'btn_text' => $btn_text,
+            'url'      => $url,
+            'skip_key' => $skip_key,
+            'is_hero'  => false,
+        ] );
     }
 }
 
@@ -301,14 +363,14 @@ function doi_get_founder_html( $opts ) {
             <span class="doi-kicker"><?php echo $kicker; ?></span>
             <h2 class="doi-display-heading"><?php echo $title; ?></h2>
             <p class="doi-body-text"><?php echo $text; ?></p>
-            <a href="<?php echo $btn_url; ?>" class="doi-link-underlined">
+            <a href="<?php echo $btn_url; ?>" class="doi-link-underlined" style="cursor:pointer;">
               <span><?php echo $btn_text; ?></span>
             </a>
           </div>
 
           <!-- Right Column: Founder Window Photo -->
           <div class="doi-founder-media">
-            <div class="doi-founder-img-card">
+            <div class="doi-founder-img-card" <?php if ( ! empty( $btn_url ) && $btn_url !== '#' ) { echo 'onclick="window.location.href=\'' . esc_url( $btn_url ) . '\';" style="cursor:pointer;"'; } ?>>
               <img src="<?php echo $img_url; ?>" alt="<?php echo esc_attr( $kicker ); ?>" loading="lazy">
               <div class="doi-img-inner-shadow" aria-hidden="true"></div>
             </div>
@@ -363,7 +425,7 @@ function doi_get_cards_html( $opts ) {
       <div class="doi-container">
         <div class="doi-cards-grid">
           <!-- Card 1: THE DREAM JOURNAL -->
-          <div class="doi-feature-card doi-card-journal" style="background-image: url('<?php echo $card1_img; ?>');">
+          <div class="doi-feature-card doi-card-journal" style="background-image: url('<?php echo $card1_img; ?>');" <?php if ( ! empty( $card1_btn_url ) && $card1_btn_url !== '#' ) { echo 'onclick="window.location.href=\'' . esc_url( $card1_btn_url ) . '\';" style="background-image: url(\'' . $card1_img . '\'); cursor:pointer;"'; } ?>>
             <div class="doi-card-overlay doi-card-overlay--rose" aria-hidden="true"></div>
             <div class="doi-card-content">
               <div class="doi-card-icon" aria-hidden="true">
@@ -374,14 +436,14 @@ function doi_get_cards_html( $opts ) {
               </div>
               <h3 class="doi-card-title"><?php echo $card1_title; ?></h3>
               <p class="doi-card-subtitle"><?php echo $card1_text; ?></p>
-              <a href="<?php echo $card1_btn_url; ?>" class="doi-card-btn doi-card-btn--light">
+              <a href="<?php echo $card1_btn_url; ?>" class="doi-card-btn doi-card-btn--light" onclick="event.stopPropagation();">
                 <?php echo $card1_btn_text; ?>
               </a>
             </div>
           </div>
 
           <!-- Card 2: THE BLOG -->
-          <div class="doi-feature-card doi-card-blog" style="background-image: url('<?php echo $card2_img; ?>');">
+          <div class="doi-feature-card doi-card-blog" style="background-image: url('<?php echo $card2_img; ?>');" <?php if ( ! empty( $card2_btn_url ) && $card2_btn_url !== '#' ) { echo 'onclick="window.location.href=\'' . esc_url( $card2_btn_url ) . '\';" style="background-image: url(\'' . $card2_img . '\'); cursor:pointer;"'; } ?>>
             <div class="doi-card-overlay doi-card-overlay--sand" aria-hidden="true"></div>
             <div class="doi-card-content">
               <div class="doi-card-icon doi-card-icon--dark" aria-hidden="true">
@@ -393,7 +455,7 @@ function doi_get_cards_html( $opts ) {
               </div>
               <h3 class="doi-card-title doi-card-title--dark"><?php echo $card2_title; ?></h3>
               <p class="doi-card-subtitle doi-card-subtitle--dark"><?php echo $card2_text; ?></p>
-              <a href="<?php echo $card2_btn_url; ?>" class="doi-card-btn doi-card-btn--dark">
+              <a href="<?php echo $card2_btn_url; ?>" class="doi-card-btn doi-card-btn--dark" onclick="event.stopPropagation();">
                 <?php echo $card2_btn_text; ?>
               </a>
             </div>
@@ -407,11 +469,16 @@ function doi_get_cards_html( $opts ) {
 
 // ─── Section 4: Sacred Footer Bar ─────────────────────────────────────────────
 function doi_get_footer_bar_html( $opts ) {
-    $m1    = esc_html( $opts['footer_mantra1'] ?? 'SLOW DOWN' );
-    $m2    = esc_html( $opts['footer_mantra2'] ?? 'LISTEN WITHIN' );
-    $brand = esc_html( $opts['footer_brand']   ?? 'DRUMI' );
-    $m3    = esc_html( $opts['footer_mantra3'] ?? 'TRUST THE MESSAGE' );
-    $m4    = esc_html( $opts['footer_mantra4'] ?? 'RETURN TO YOU' );
+    $m1      = esc_html( $opts['footer_mantra1'] ?? 'SLOW DOWN' );
+    $m1_u    = esc_url( $opts['footer_mantra1_url'] ?? '#' );
+    $m2      = esc_html( $opts['footer_mantra2'] ?? 'LISTEN WITHIN' );
+    $m2_u    = esc_url( $opts['footer_mantra2_url'] ?? '#' );
+    $brand   = esc_html( $opts['footer_brand']   ?? 'DRUMI' );
+    $brand_u = esc_url( $opts['footer_brand_url'] ?? '/' );
+    $m3      = esc_html( $opts['footer_mantra3'] ?? 'TRUST THE MESSAGE' );
+    $m3_u    = esc_url( $opts['footer_mantra3_url'] ?? '#' );
+    $m4      = esc_html( $opts['footer_mantra4'] ?? 'RETURN TO YOU' );
+    $m4_u    = esc_url( $opts['footer_mantra4_url'] ?? '#' );
 
     ob_start();
     ?>
@@ -419,7 +486,7 @@ function doi_get_footer_bar_html( $opts ) {
       <div class="doi-container">
         <div class="doi-footer-items">
           <!-- Item 1: SLOW DOWN -->
-          <div class="doi-footer-item">
+          <a href="<?php echo $m1_u; ?>" class="doi-footer-item" style="text-decoration:none;">
             <svg class="doi-footer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
               <path d="M12 2C8 6 4 11 4 16C4 19.314 7.582 22 12 22C16.418 22 20 19.314 20 16C20 11 16 6 12 2Z" />
               <path d="M12 8V18" />
@@ -427,45 +494,44 @@ function doi_get_footer_bar_html( $opts ) {
               <path d="M12 14C10 12 8 13 7 15" />
             </svg>
             <span class="doi-footer-label"><?php echo $m1; ?></span>
-          </div>
+          </a>
 
           <!-- Item 2: LISTEN WITHIN -->
-          <div class="doi-footer-item">
+          <a href="<?php echo $m2_u; ?>" class="doi-footer-item" style="text-decoration:none;">
             <svg class="doi-footer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
               <circle cx="12" cy="12" r="9" />
               <circle cx="12" cy="12" r="5" stroke-dasharray="2 2" />
               <circle cx="12" cy="12" r="1.5" fill="currentColor" />
             </svg>
             <span class="doi-footer-label"><?php echo $m2; ?></span>
-          </div>
+          </a>
 
           <!-- Center Item: DRUMI Emblem -->
-          <div class="doi-footer-item doi-footer-item--center">
+          <a href="<?php echo $brand_u; ?>" class="doi-footer-item doi-footer-item--center" style="text-decoration:none;">
             <svg class="doi-footer-emblem" viewBox="0 0 40 48" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path d="M20 2C20 2 6 22 6 32C6 39.732 12.268 46 20 46C27.732 46 34 39.732 34 32C34 22 20 2 20 2Z" />
               <circle cx="20" cy="32" r="6" />
             </svg>
             <span class="doi-footer-brand"><?php echo $brand; ?></span>
-          </div>
+          </a>
 
           <!-- Item 3: TRUST THE MESSAGE -->
-          <div class="doi-footer-item">
+          <a href="<?php echo $m3_u; ?>" class="doi-footer-item" style="text-decoration:none;">
             <svg class="doi-footer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
               <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" />
             </svg>
             <span class="doi-footer-label"><?php echo $m3; ?></span>
-          </div>
+          </a>
 
           <!-- Item 4: RETURN TO YOU -->
-          <div class="doi-footer-item">
+          <a href="<?php echo $m4_u; ?>" class="doi-footer-item" style="text-decoration:none;">
             <svg class="doi-footer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
               <circle cx="12" cy="12" r="9" />
               <circle cx="12" cy="12" r="3" />
             </svg>
             <span class="doi-footer-label"><?php echo $m4; ?></span>
-          </div>
+          </a>
         </div>
-      </div>
     </footer>
     <?php
     return ob_get_clean();
@@ -637,6 +703,7 @@ function doi_sanitize_settings( $in ) {
         'button_text'        => sanitize_text_field( $in['button_text'] ?? 'JOIN THE JOURNEY' ),
         'button_subtext'     => sanitize_text_field( $in['button_subtext'] ?? 'STEP INTO YOUR INNER WORLD' ),
         'preload_url'        => esc_url_raw( $in['preload_url'] ?? '' ),
+        'target_slugs'       => sanitize_text_field( $in['target_slugs'] ?? 'home' ),
         'door_image_url'     => esc_url_raw( $in['door_image_url'] ?? ( DOI_PLUGIN_URL . 'assets/threshold-doors.jpg' ) ),
         'room_image_url'     => esc_url_raw( $in['room_image_url'] ?? ( DOI_PLUGIN_URL . 'assets/room-interior.jpg' ) ),
 
@@ -674,10 +741,15 @@ function doi_sanitize_settings( $in ) {
 
         'footer_enabled'     => empty( $in['footer_enabled'] )     ? 0 : 1,
         'footer_mantra1'     => sanitize_text_field( $in['footer_mantra1'] ?? 'SLOW DOWN' ),
+        'footer_mantra1_url' => esc_url_raw( $in['footer_mantra1_url'] ?? '#' ),
         'footer_mantra2'     => sanitize_text_field( $in['footer_mantra2'] ?? 'LISTEN WITHIN' ),
+        'footer_mantra2_url' => esc_url_raw( $in['footer_mantra2_url'] ?? '#' ),
         'footer_brand'       => sanitize_text_field( $in['footer_brand'] ?? 'DRUMI' ),
+        'footer_brand_url'   => esc_url_raw( $in['footer_brand_url'] ?? '/' ),
         'footer_mantra3'     => sanitize_text_field( $in['footer_mantra3'] ?? 'TRUST THE MESSAGE' ),
+        'footer_mantra3_url' => esc_url_raw( $in['footer_mantra3_url'] ?? '#' ),
         'footer_mantra4'     => sanitize_text_field( $in['footer_mantra4'] ?? 'RETURN TO YOU' ),
+        'footer_mantra4_url' => esc_url_raw( $in['footer_mantra4_url'] ?? '#' ),
     ];
 }
 
@@ -748,12 +820,33 @@ function doi_settings_page() {
           <div class="doi-toggle-row">
             <div class="doi-toggle-info">
               <strong>Enable Site Intro / Hero on Homepage</strong>
-              <p>Automatically renders the door entrance at the top of your site.</p>
+              <p>Automatically renders the door entrance at the top of your site (replaces theme header/footer on homepage).</p>
             </div>
             <label class="doi-switch">
               <input type="checkbox" name="<?php echo DOI_OPTIONS; ?>[site_intro_enabled]" value="1" <?php checked( $opts['site_intro_enabled'], 1 ); ?>>
               <span class="doi-slider"></span>
             </label>
+          </div>
+
+          <div class="doi-field-row">
+            <label for="doi_target_slugs">Homepage & Target Slugs</label>
+            <input type="text" id="doi_target_slugs" name="<?php echo DOI_OPTIONS; ?>[target_slugs]"
+                   value="<?php echo esc_attr( $opts['target_slugs'] ); ?>" placeholder="home">
+            <p class="description" style="color:#646970; font-size:12px; margin-top:4px;">
+              Site root (<code>/</code>) and <code>/home</code> are automatically active. Comma-separated extra slugs can be added (e.g. <code>home, front-page</code>).
+            </p>
+          </div>
+
+          <div class="doi-field-row" style="background:#fffdfa; border:1px solid #dfd0c4; border-radius:8px; padding:16px; margin:14px 0;">
+            <label for="doi_preload_url" style="color:#7d5653; font-size:14px; font-weight:700;">
+              🎯 Door Open Target / Redirect URL (Optional)
+            </label>
+            <input type="text" id="doi_preload_url" name="<?php echo DOI_OPTIONS; ?>[preload_url]"
+                   value="<?php echo esc_attr( $opts['preload_url'] ); ?>" placeholder="https://clarkeecha.pixelora.studio/store or /shop">
+            <p class="description" style="color:#646970; font-size:12px; margin-top:6px; line-height:1.5;">
+              When a visitor clicks <strong>"JOIN THE JOURNEY"</strong>, the 3D doors will swing open with procedural sound, the camera will zoom through the doorway, and then automatically navigate to this page URL.
+              <br><em>Leave completely <strong>blank</strong> to smoothly scroll down to the "Our Founder" section below!</em>
+            </p>
           </div>
 
           <div class="doi-toggle-row">
@@ -789,13 +882,6 @@ function doi_settings_page() {
               <input type="text" id="doi_button_subtext" name="<?php echo DOI_OPTIONS; ?>[button_subtext]"
                      value="<?php echo esc_attr( $opts['button_subtext'] ); ?>" placeholder="STEP INTO YOUR INNER WORLD">
             </div>
-          </div>
-
-          <div class="doi-field-row">
-            <label for="doi_preload_url">Target / Redirect URL (Optional)</label>
-            <input type="text" id="doi_preload_url" name="<?php echo DOI_OPTIONS; ?>[preload_url]"
-                   value="<?php echo esc_attr( $opts['preload_url'] ); ?>" placeholder="Leave blank to reveal / smooth-scroll to sections">
-            <p class="description" style="color:#646970; font-size:12px; margin-top:4px;">Leave <strong>blank</strong> so clicking the button smoothly opens the doors and scrolls right into Our Founder section.</p>
           </div>
 
           <div class="doi-field-row">
@@ -1000,29 +1086,39 @@ function doi_settings_page() {
 
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:12px;">
             <div class="doi-field-row" style="border:none; padding:4px 0;">
-              <label for="doi_footer_mantra1">Mantra 1</label>
+              <label for="doi_footer_mantra1">Mantra 1 Label & Link</label>
               <input type="text" id="doi_footer_mantra1" name="<?php echo DOI_OPTIONS; ?>[footer_mantra1]"
-                     value="<?php echo esc_attr( $opts['footer_mantra1'] ); ?>" placeholder="SLOW DOWN">
+                     value="<?php echo esc_attr( $opts['footer_mantra1'] ); ?>" placeholder="SLOW DOWN" style="margin-bottom:4px;">
+              <input type="text" name="<?php echo DOI_OPTIONS; ?>[footer_mantra1_url]"
+                     value="<?php echo esc_attr( $opts['footer_mantra1_url'] ?? '#' ); ?>" placeholder="Link (e.g. # or /slow-down)">
             </div>
             <div class="doi-field-row" style="border:none; padding:4px 0;">
-              <label for="doi_footer_mantra2">Mantra 2</label>
+              <label for="doi_footer_mantra2">Mantra 2 Label & Link</label>
               <input type="text" id="doi_footer_mantra2" name="<?php echo DOI_OPTIONS; ?>[footer_mantra2]"
-                     value="<?php echo esc_attr( $opts['footer_mantra2'] ); ?>" placeholder="LISTEN WITHIN">
+                     value="<?php echo esc_attr( $opts['footer_mantra2'] ); ?>" placeholder="LISTEN WITHIN" style="margin-bottom:4px;">
+              <input type="text" name="<?php echo DOI_OPTIONS; ?>[footer_mantra2_url]"
+                     value="<?php echo esc_attr( $opts['footer_mantra2_url'] ?? '#' ); ?>" placeholder="Link (e.g. # or /meditation)">
             </div>
             <div class="doi-field-row" style="border:none; padding:4px 0;">
-              <label for="doi_footer_brand">Center Brand</label>
+              <label for="doi_footer_brand">Center Brand Label & Link</label>
               <input type="text" id="doi_footer_brand" name="<?php echo DOI_OPTIONS; ?>[footer_brand]"
-                     value="<?php echo esc_attr( $opts['footer_brand'] ); ?>" placeholder="DRUMI">
+                     value="<?php echo esc_attr( $opts['footer_brand'] ); ?>" placeholder="DRUMI" style="margin-bottom:4px;">
+              <input type="text" name="<?php echo DOI_OPTIONS; ?>[footer_brand_url]"
+                     value="<?php echo esc_attr( $opts['footer_brand_url'] ?? '/' ); ?>" placeholder="Link (default: /)">
             </div>
             <div class="doi-field-row" style="border:none; padding:4px 0;">
-              <label for="doi_footer_mantra3">Mantra 3</label>
+              <label for="doi_footer_mantra3">Mantra 3 Label & Link</label>
               <input type="text" id="doi_footer_mantra3" name="<?php echo DOI_OPTIONS; ?>[footer_mantra3]"
-                     value="<?php echo esc_attr( $opts['footer_mantra3'] ); ?>" placeholder="TRUST THE MESSAGE">
+                     value="<?php echo esc_attr( $opts['footer_mantra3'] ); ?>" placeholder="TRUST THE MESSAGE" style="margin-bottom:4px;">
+              <input type="text" name="<?php echo DOI_OPTIONS; ?>[footer_mantra3_url]"
+                     value="<?php echo esc_attr( $opts['footer_mantra3_url'] ?? '#' ); ?>" placeholder="Link (e.g. # or /trust)">
             </div>
             <div class="doi-field-row" style="border:none; padding:4px 0;">
-              <label for="doi_footer_mantra4">Mantra 4</label>
+              <label for="doi_footer_mantra4">Mantra 4 Label & Link</label>
               <input type="text" id="doi_footer_mantra4" name="<?php echo DOI_OPTIONS; ?>[footer_mantra4]"
-                     value="<?php echo esc_attr( $opts['footer_mantra4'] ); ?>" placeholder="RETURN TO YOU">
+                     value="<?php echo esc_attr( $opts['footer_mantra4'] ); ?>" placeholder="RETURN TO YOU" style="margin-bottom:4px;">
+              <input type="text" name="<?php echo DOI_OPTIONS; ?>[footer_mantra4_url]"
+                     value="<?php echo esc_attr( $opts['footer_mantra4_url'] ?? '#' ); ?>" placeholder="Link (e.g. # or /return)">
             </div>
           </div>
         </div>
