@@ -225,7 +225,10 @@
       return null;
     }
 
-    document.body.classList.add('tar-locked');
+    var isHero = root.getAttribute('data-is-hero') === '1' || root.classList.contains('is-hero');
+    if (!isHero) {
+      document.body.classList.add('tar-locked');
+    }
 
     var baseSrc = (base && base.getAttribute('data-src')) || cfg.doorImageUrl || '';
     var roomSrc = (room && room.getAttribute('data-src')) || cfg.roomImageUrl || '';
@@ -307,11 +310,26 @@
         try { sessionStorage.setItem(skipKey, '1'); } catch (e) {}
       }
 
-      // Unlock scrolling & signal arrival so page animations under the overlay can start
+      // Unlock scrolling & signal arrival
       document.body.classList.remove('tar-locked');
       document.body.classList.add('tar-arrived');
 
-      // Begin slow, velvety dissolve of the room image into the store underneath
+      var dest = root.getAttribute('data-home-url');
+      if (dest && dest.trim() !== '' && dest !== '#' && dest !== window.location.pathname && dest !== window.location.href) {
+        window.location.href = dest;
+        return;
+      }
+
+      // Hero mode: the door stays as the hero on top, and smoothly scrolls to the 3 sections below
+      if (isHero) {
+        var founderSec = document.getElementById('doi-founder') || document.getElementById('doi-landing-sections');
+        if (founderSec) {
+          founderSec.scrollIntoView({ behavior: 'smooth' });
+        }
+        return;
+      }
+
+      // Overlay mode: begin slow, velvety dissolve of the room image into the store underneath
       root.classList.add('is-dissolving');
 
       // After 2.0s dissolve transition completes, finish navigation or cleanup
@@ -319,14 +337,9 @@
         root.classList.add('is-done');
         window.removeEventListener('resize', layout);
 
-        var dest = root.getAttribute('data-home-url');
-        if (dest && dest.trim() !== '' && dest !== '#' && dest !== window.location.pathname && dest !== window.location.href) {
-          window.location.href = dest;
-        } else {
-          setTimeout(function () {
-            if (root.parentNode) root.parentNode.removeChild(root);
-          }, 150);
-        }
+        setTimeout(function () {
+          if (root.parentNode) root.parentNode.removeChild(root);
+        }, 150);
       }, 2000);
     }
 
