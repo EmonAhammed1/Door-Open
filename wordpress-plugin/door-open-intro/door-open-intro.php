@@ -3,7 +3,7 @@
  * Plugin Name:  Door Open Intro
  * Plugin URI:   https://github.com/EmonAhammed1/Door-Open
  * Description:  Cinematic 3D door-opening hero animation & DRUMI sanctuary landing sections for WordPress. Pure CSS3 3D transforms & Web Audio API. Compatible with Elementor, Gutenberg, and all themes.
- * Version:      3.4.6
+ * Version:      3.4.7
  * Author:       Door Open
  * License:      GPL-2.0-or-later
  * Text Domain:  door-open-intro
@@ -12,7 +12,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-define( 'DOI_VERSION',    '3.4.6' );
+define( 'DOI_VERSION',    '3.4.7' );
 define( 'DOI_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DOI_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'DOI_OPTIONS',    'doi_settings' );
@@ -49,7 +49,7 @@ function doi_defaults() {
         'vision_enabled'      => 1,
         'vision_kicker'       => 'OUR VISION',
         'vision_title'        => 'Remember. Understand. Integrate.',
-        'vision_text'         => "We believe your dreams are more than stories. They are messages from within, guiding you back to what truly matters.",
+        'vision_text'         => "We believe your dreams are more than stories.\nThey are messages from within, guiding you\nback to what truly matters.",
 
         // Section 3: Feature Cards & Footer
         'cards_enabled'       => 1,
@@ -386,9 +386,15 @@ function doi_get_founder_html( $opts ) {
 
 // ─── Section 2: Our Vision ────────────────────────────────────────────────────
 function doi_get_vision_html( $opts ) {
-    $kicker = esc_html( $opts['vision_kicker'] ?? 'OUR VISION' );
-    $title  = esc_html( $opts['vision_title'] ?? 'Remember. Understand. Integrate.' );
-    $text   = nl2br( esc_html( $opts['vision_text'] ?? "We believe your dreams are more than stories. They are messages from within, guiding you back to what truly matters." ) );
+    $kicker   = esc_html( $opts['vision_kicker'] ?? 'OUR VISION' );
+    $title    = esc_html( $opts['vision_title'] ?? 'Remember. Understand. Integrate.' );
+    $raw_text = $opts['vision_text'] ?? "We believe your dreams are more than stories.\nThey are messages from within, guiding you\nback to what truly matters.";
+    // Ensure default or unformatted text is broken into the 3 clean lines matching target design
+    if ( strpos( $raw_text, "\n" ) === false && strpos( $raw_text, "stories" ) !== false ) {
+        $raw_text = str_replace( "stories. They", "stories.\nThey", $raw_text );
+        $raw_text = str_replace( "guiding you back", "guiding you\nback", $raw_text );
+    }
+    $text = nl2br( esc_html( $raw_text ) );
 
     ob_start();
     ?>

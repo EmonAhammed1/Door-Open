@@ -687,12 +687,12 @@ body.tar-sound-on [data-tar-sound] {
 .doi-kicker {
   display: block;
   font-family: var(--tar-display), "Cinzel", serif;
-  font-size: 0.68rem;
-  letter-spacing: 0.32em;
+  font-size: 0.72rem;
+  letter-spacing: 0.34em;
   text-transform: uppercase;
-  color: #8f7b6b;
-  font-weight: 600;
-  margin-bottom: 12px;
+  color: #8f7c78;
+  font-weight: 700;
+  margin-bottom: 14px;
 }
 
 .doi-display-heading {
@@ -762,10 +762,10 @@ body.tar-sound-on [data-tar-sound] {
 .doi-founder-content .doi-kicker {
   font-family: var(--tar-display), "Cinzel", serif;
   font-size: clamp(11.5px, 0.85vw, 13.5px);
-  letter-spacing: 0.32em;
+  letter-spacing: 0.34em;
   text-transform: uppercase;
   color: #8f7c78 !important;
-  font-weight: 600;
+  font-weight: 700 !important;
   margin: 0 0 clamp(18px, 2.4vw, 26px) 0;
   display: block;
 }
@@ -802,11 +802,11 @@ body.tar-sound-on [data-tar-sound] {
   font-size: clamp(11.5px, 0.85vw, 13.5px);
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: 700 !important;
   color: #8f7c78 !important;
   text-decoration: none !important;
   padding-bottom: 6px;
-  border-bottom: 1.5px solid #8f7c78 !important;
+  border-bottom: 2px solid #8f7c78 !important;
   transition: color 0.3s ease, border-color 0.3s ease;
 }
 
@@ -952,7 +952,8 @@ body.tar-sound-on [data-tar-sound] {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  max-width: 660px;
+  max-width: 960px;
+  width: 100%;
   margin: 0 auto;
   position: relative;
   z-index: 2;
@@ -961,42 +962,52 @@ body.tar-sound-on [data-tar-sound] {
 
 .doi-vision-header .doi-kicker {
   font-family: var(--tar-display), "Cinzel", serif !important;
-  font-size: clamp(10.5px, 0.85vw, 12px) !important;
-  letter-spacing: 0.34em !important;
+  font-size: clamp(11px, 0.9vw, 13px) !important;
+  letter-spacing: 0.36em !important;
   text-transform: uppercase !important;
   color: #8f7c78 !important;
-  font-weight: 500 !important;
-  margin-bottom: 12px !important;
+  font-weight: 700 !important;
+  margin-bottom: 14px !important;
 }
 
 .doi-vision-header h2,
 .doi-vision-header .doi-display-heading,
 .doi-vision-header .doi-vision-title {
   font-family: var(--tar-body), "Cormorant Garamond", Garamond, Georgia, serif !important;
-  font-size: clamp(32px, 3.8vw, 46px) !important;
+  font-size: clamp(30px, 3.6vw, 48px) !important;
   font-weight: 500 !important;
   color: #42352d !important;
-  line-height: 1.25 !important;
-  letter-spacing: 0.015em !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0.012em !important;
   text-transform: none !important;
-  margin: 0 0 6px 0 !important;
+  margin: 0 0 8px 0 !important;
+  white-space: nowrap !important;
 }
 
 .doi-vision-header .doi-star-sep {
   color: #8f7c78 !important;
-  font-size: 14px !important;
-  margin: 2px 0 14px !important;
+  font-size: 15px !important;
+  margin: 4px 0 16px !important;
 }
 
 .doi-vision-header .doi-vision-body {
   font-family: var(--tar-body), "Cormorant Garamond", Georgia, serif !important;
-  font-size: clamp(16px, 1.3vw, 19px) !important;
+  font-size: clamp(17.5px, 1.4vw, 21px) !important;
   font-weight: 400 !important;
   line-height: 1.62 !important;
-  color: #53453b !important;
+  color: #4e3f35 !important;
   text-align: center !important;
-  max-width: 620px !important;
+  max-width: 580px !important;
   margin: 0 auto !important;
+}
+
+@media (max-width: 680px) {
+  .doi-vision-header h2,
+  .doi-vision-header .doi-display-heading,
+  .doi-vision-header .doi-vision-title {
+    white-space: normal !important;
+    font-size: clamp(24px, 6.2vw, 32px) !important;
+  }
 }
 
 @media (min-width: 640px) {
@@ -1008,38 +1019,38 @@ body.tar-sound-on [data-tar-sound] {
 
 /* ─────────────────────────────────────────────────────────────────────
    SECTION 3: FEATURE CARDS (Dream Journal & Blog)
-   Spacious, wide container spanning across both sides (89-92% width)
+   Expanded, large cards matching 1000% target image proportions
    ───────────────────────────────────────────────────────────────────── */
 .doi-cards-sec {
   background-color: #f7f1eb;
-  padding: 0 0 clamp(44px, 5.5vw, 68px);
+  padding: 0 0 clamp(50px, 6.5vw, 80px);
   position: relative;
   z-index: 2;
 }
 
 .doi-cards-container {
   width: 100%;
-  max-width: 1240px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 0 clamp(18px, 4.2vw, 54px);
+  padding: 0 clamp(16px, 3.8vw, 50px);
   box-sizing: border-box;
 }
 
 .doi-cards-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: clamp(18px, 2.6vw, 34px);
+  gap: clamp(12px, 1.8vw, 24px);
   width: 100%;
 }
 
 .doi-feature-card {
   position: relative;
   width: 100%;
-  aspect-ratio: 2.14 / 1;
-  min-height: clamp(260px, 22vw, 320px);
+  aspect-ratio: 2.12 / 1;
+  min-height: clamp(280px, 23vw, 350px);
   border-radius: 4px;
   overflow: hidden;
-  padding: clamp(34px, 3.6vw, 48px) clamp(22px, 2.8vw, 40px);
+  padding: clamp(36px, 4vw, 54px) clamp(24px, 3.2vw, 44px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1065,11 +1076,11 @@ body.tar-sound-on [data-tar-sound] {
 }
 
 .doi-card-overlay--rose {
-  background-color: rgba(140, 103, 100, 0.06);
+  background-color: rgba(140, 103, 100, 0.05);
 }
 
 .doi-card-overlay--sand {
-  background-color: rgba(223, 211, 197, 0.05);
+  background-color: rgba(223, 211, 197, 0.04);
 }
 
 .doi-card-content {
@@ -1080,13 +1091,13 @@ body.tar-sound-on [data-tar-sound] {
   align-items: center;
   text-align: center;
   width: 100%;
-  max-width: 440px;
+  max-width: 480px;
 }
 
 .doi-card-icon {
-  width: 26px;
-  height: 34px;
-  margin-bottom: 12px;
+  width: 28px;
+  height: 36px;
+  margin-bottom: 14px;
   color: #fdfbf8;
   display: flex;
   align-items: center;
@@ -1104,70 +1115,71 @@ body.tar-sound-on [data-tar-sound] {
 }
 
 .doi-card-title {
-  font-family: var(--tar-display), "Cinzel", serif;
-  font-size: clamp(13px, 1.1vw, 16px);
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: #fdfbf8;
-  font-weight: 500;
-  margin: 0 0 8px 0;
-  line-height: 1.3;
+  font-family: var(--tar-display), "Cinzel", serif !important;
+  font-size: clamp(13.5px, 1.15vw, 16.5px) !important;
+  letter-spacing: 0.3em !important;
+  text-transform: uppercase !important;
+  color: #fdfbf8 !important;
+  font-weight: 700 !important;
+  margin: 0 0 10px 0 !important;
+  line-height: 1.3 !important;
 }
 
 .doi-card-title--dark {
-  color: #3e3025;
+  color: #3e3025 !important;
 }
 
 .doi-card-subtitle {
-  font-family: var(--tar-body), "Cormorant Garamond", Georgia, serif;
-  font-style: italic;
-  font-size: clamp(14.5px, 1.15vw, 17px);
-  color: rgba(253, 251, 248, 0.92);
-  margin: 0 0 20px 0;
-  line-height: 1.45;
-  text-align: center;
+  font-family: var(--tar-body), "Cormorant Garamond", Georgia, serif !important;
+  font-style: italic !important;
+  font-size: clamp(15.5px, 1.25vw, 18px) !important;
+  font-weight: 500 !important;
+  color: rgba(253, 251, 248, 0.95) !important;
+  margin: 0 0 22px 0 !important;
+  line-height: 1.48 !important;
+  text-align: center !important;
 }
 
 .doi-card-subtitle--dark {
-  color: #554436;
+  color: #4a3a2d !important;
 }
 
 .doi-card-btn {
-  display: inline-block;
-  padding: 8px 22px;
-  border-radius: 1px;
-  font-family: var(--tar-display), "Cinzel", serif;
-  font-size: 11px;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
+  display: inline-block !important;
+  padding: 9px 24px !important;
+  border-radius: 1px !important;
+  font-family: var(--tar-display), "Cinzel", serif !important;
+  font-size: 11.5px !important;
+  letter-spacing: 0.26em !important;
+  text-transform: uppercase !important;
   text-decoration: none !important;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  line-height: 1.25;
+  font-weight: 700 !important;
+  transition: all 0.3s ease !important;
+  line-height: 1.25 !important;
 }
 
 .doi-card-btn--light {
-  border: 1px solid rgba(255, 255, 255, 0.72);
-  color: #ffffff;
-  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
+  color: #ffffff !important;
+  background-color: transparent !important;
 }
 
 .doi-card-btn--light:hover {
-  background-color: #ffffff;
-  color: #8c6764;
-  border-color: #ffffff;
+  background-color: #ffffff !important;
+  color: #8c6764 !important;
+  border-color: #ffffff !important;
 }
 
 .doi-card-btn--dark {
-  border: 1px solid #584638;
-  color: #3e3025;
-  background-color: transparent;
+  border: 1px solid #584638 !important;
+  color: #3e3025 !important;
+  background-color: transparent !important;
 }
 
 .doi-card-btn--dark:hover {
-  background-color: #3e3025;
-  color: #f8f2eb;
-  border-color: #3e3025;
+  background-color: #3e3025 !important;
+  color: #f8f2eb !important;
+  border-color: #3e3025 !important;
 }
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -1210,11 +1222,12 @@ body.tar-sound-on [data-tar-sound] {
 }
 
 .doi-footer-label {
-  font-family: var(--tar-display), "Cinzel", serif;
-  font-size: clamp(10px, 0.75vw, 11.5px);
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  white-space: nowrap;
+  font-family: var(--tar-display), "Cinzel", serif !important;
+  font-size: clamp(10.5px, 0.8vw, 12px) !important;
+  letter-spacing: 0.24em !important;
+  text-transform: uppercase !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
 }
 
 /* Center DRUMI item */
@@ -1233,13 +1246,13 @@ body.tar-sound-on [data-tar-sound] {
 }
 
 .doi-footer-brand {
-  font-family: var(--tar-display), "Cinzel", serif;
-  font-size: clamp(12px, 0.9vw, 14px);
-  letter-spacing: 0.36em;
-  text-transform: uppercase;
-  font-weight: 600;
-  color: #fbf7f4;
-  padding-left: 0.36em;
+  font-family: var(--tar-display), "Cinzel", serif !important;
+  font-size: clamp(12.5px, 0.95vw, 14.5px) !important;
+  letter-spacing: 0.38em !important;
+  text-transform: uppercase !important;
+  font-weight: 700 !important;
+  color: #fbf7f4 !important;
+  padding-left: 0.38em !important;
 }
 
 /* Responsive Overrides for Landing Sections */
@@ -1257,9 +1270,9 @@ body.tar-sound-on [data-tar-sound] {
     gap: 22px;
   }
   .doi-feature-card {
-    min-height: 240px;
+    min-height: 250px;
     aspect-ratio: auto;
-    padding: 36px 20px;
+    padding: 38px 22px;
   }
   .doi-footer-items {
     justify-content: center;
@@ -1267,3 +1280,5 @@ body.tar-sound-on [data-tar-sound] {
     flex-wrap: wrap;
   }
 }
+
+
