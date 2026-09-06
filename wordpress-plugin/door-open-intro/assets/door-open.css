@@ -846,22 +846,35 @@ body.tar-sound-on [data-tar-sound] {
     min-height: auto;
   }
   .doi-founder-left {
-    justify-content: flex-start;
+    justify-content: center;
+    text-align: center;
     padding: clamp(44px, 7vw, 60px) clamp(20px, 5vw, 36px) clamp(32px, 5vw, 44px);
   }
   .doi-founder-content {
-    max-width: 100%;
+    max-width: 540px;
+    margin: 0 auto;
+    align-items: center;
+    text-align: center;
+  }
+  .doi-founder-content .doi-kicker {
+    text-align: center;
   }
   .doi-founder-title {
+    text-align: center;
     font-size: clamp(30px, 7vw, 42px);
     line-height: 1.18;
     margin-bottom: 18px;
   }
   .doi-founder-desc {
+    text-align: center;
     font-size: clamp(16px, 3.8vw, 18.5px);
     line-height: 1.55;
-    max-width: 100%;
-    margin-bottom: 24px;
+    max-width: 500px;
+    margin: 0 auto 24px;
+  }
+  .doi-founder-action {
+    justify-content: center;
+    margin: 0 auto;
   }
   .doi-founder-right {
     min-height: 340px;
@@ -871,31 +884,31 @@ body.tar-sound-on [data-tar-sound] {
 
 @media (max-width: 480px) {
   .doi-founder-left {
-    padding: 38px 18px 28px;
+    padding: 40px 20px 30px;
   }
   .doi-founder-content .doi-kicker {
-    font-size: 10.5px;
-    letter-spacing: 0.26em;
+    font-size: 11px;
+    letter-spacing: 0.28em;
     margin-bottom: 14px;
   }
   .doi-founder-title {
-    font-size: 28px;
+    font-size: 29px;
     line-height: 1.2;
     margin-bottom: 16px;
   }
   .doi-founder-desc {
-    font-size: 15.5px;
-    line-height: 1.55;
-    margin-bottom: 22px;
+    font-size: 16px;
+    line-height: 1.58;
+    margin-bottom: 24px;
   }
   .doi-founder-action .doi-link-underlined {
-    font-size: 11px;
-    letter-spacing: 0.22em;
+    font-size: 11.5px;
+    letter-spacing: 0.24em;
     padding-bottom: 4px;
   }
   .doi-founder-right {
-    min-height: 270px;
-    height: 280px;
+    min-height: 280px;
+    height: 300px;
   }
 }
 

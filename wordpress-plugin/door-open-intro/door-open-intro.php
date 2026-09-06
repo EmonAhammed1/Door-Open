@@ -3,7 +3,7 @@
  * Plugin Name:  Door Open Intro
  * Plugin URI:   https://github.com/EmonAhammed1/Door-Open
  * Description:  Cinematic 3D door-opening hero animation & DRUMI sanctuary landing sections for WordPress. Pure CSS3 3D transforms & Web Audio API. Compatible with Elementor, Gutenberg, and all themes.
- * Version:      3.4.5
+ * Version:      3.4.6
  * Author:       Door Open
  * License:      GPL-2.0-or-later
  * Text Domain:  door-open-intro
@@ -12,7 +12,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-define( 'DOI_VERSION',    '3.4.5' );
+define( 'DOI_VERSION',    '3.4.6' );
 define( 'DOI_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DOI_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'DOI_OPTIONS',    'doi_settings' );
