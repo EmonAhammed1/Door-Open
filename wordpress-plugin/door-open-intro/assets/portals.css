@@ -343,6 +343,21 @@
 	text-transform: uppercase;
 	color: #8a6a3f;
 }
+/* the short invitation of what lies behind the door, under its name */
+.doi-portals-desc {
+	max-width: 30em;
+	min-height: 2.9em;
+	margin: -8px 0 0;
+	font-family: 'Cormorant Garamond', Garamond, Georgia, serif;
+	font-size: 20px;
+	font-style: italic;
+	line-height: 1.45;
+	color: #5a4632;
+	text-wrap: balance;
+}
+.doi-portals-desc:empty {
+	display: none;
+}
 .doi-portals-cta {
 	display: inline-flex;
 	align-items: center;
@@ -443,6 +458,12 @@
 		margin-top: 10px;
 	}
 	.doi-portals-name {
+		font-size: 18px;
+	}
+	.doi-portals-desc {
+		max-width: 22em;
+		margin-top: -6px;
+		padding: 0 12px;
 		font-size: 18px;
 	}
 	.doi-portals-cta {

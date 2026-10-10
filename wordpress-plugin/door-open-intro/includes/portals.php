@@ -26,26 +26,28 @@ function doi_portal_stages() {
 }
 
 function doi_portals_defaults() {
+	// name, colour, and the short invitation shown under the door while it stands in the middle
 	$journeys = array(
-		array( 'Awakening', '#F1E9D9' ),
-		array( 'Awareness', '#A6AD97' ),
-		array( 'Dream Language', '#9BAFBA' ),
-		array( 'Emotions', '#C49A9D' ),
-		array( 'Creative Power', '#BD8069' ),
-		array( 'Patterns', '#85866B' ),
-		array( 'Relationships', '#A78391' ),
-		array( 'Transformation', '#633F4B' ),
-		array( 'Wisdom', '#A78761' ),
-		array( 'Direction', '#42556A' ),
-		array( 'Vision', '#426C70' ),
-		array( 'The Unconscious', '#514356' ),
-		array( 'Integration', '#6A5045' ),
+		array( 'Awakening', '#F1E9D9', 'Come closer to who you are, beneath everything the world asks you to be.' ),
+		array( 'Awareness', '#A6AD97', 'Notice what is unfolding within you, and what is asking for your attention.' ),
+		array( 'Dream Language', '#9BAFBA', 'Explore the language of your dreams, and discover what it means to you.' ),
+		array( 'Emotions', '#C49A9D', 'Make space for what you feel, and listen to what your emotions need.' ),
+		array( 'Creative Power', '#BD8069', 'Reconnect with your imagination, and give your ideas room to become real.' ),
+		array( 'Patterns', '#85866B', 'Recognise what keeps repeating, and explore the possibility of a different choice.' ),
+		array( 'Relationships', '#A78391', 'Discover what you need in connection, without losing yourself along the way.' ),
+		array( 'Transformation', '#633F4B', 'Make space for who you are becoming, and what you are ready to leave behind.' ),
+		array( 'Wisdom', '#A78761', 'Hear your own voice more clearly, and learn to trust the wisdom within.' ),
+		array( 'Direction', '#42556A', 'Find your next step, guided by what feels meaningful to you.' ),
+		array( 'Vision', '#426C70', 'Explore the life you long for, and what it could look like for you.' ),
+		array( 'The Unconscious', '#514356', 'Get curious about what lies beneath the surface, and how it shapes your life.' ),
+		array( 'Integration', '#6A5045', 'Bring what you have discovered into the way you choose, act, and live.' ),
 	);
 	$items = array();
 	foreach ( $journeys as $i => $j ) {
 		$items[] = array(
 			'name'         => $j[0],
 			'color'        => $j[1],
+			'desc'         => $j[2],
 			'design'       => substr( 'abcd', $i % 4, 1 ),
 			'stage'        => $i ? 'soon' : 'interest',
 			'interest_url' => $i ? '' : home_url( '/demo/' ),
@@ -238,7 +240,7 @@ function doi_portals_shortcode() {
 		$tex   = DOI_URL . 'assets/door/portal-' . $p['design'] . '.webp';
 		$class = 'doi-portal is-' . $stage . ( doi_portal_is_light( $p['color'] ) ? ' is-light' : '' ) . ( 0 === $pos ? ' is-active' : ' is-side' );
 		$attrs = ' class="' . esc_attr( $class ) . '" data-portal="' . (int) $i . '" data-pos="' . (int) $pos . '"'
-			. ' data-name="' . esc_attr( $p['name'] ) . '" data-cta="' . esc_attr( $cta ) . '" data-href="' . esc_url( $url ) . '"'
+			. ' data-name="' . esc_attr( $p['name'] ) . '" data-desc="' . esc_attr( $p['desc'] ) . '" data-cta="' . esc_attr( $cta ) . '" data-href="' . esc_url( $url ) . '"'
 			. ' aria-label="' . esc_attr( $p['name'] . ' — ' . $cfg['labels'][ $stage ] ) . '"'
 			. ' style="' . esc_attr( '--pc:' . $p['color'] . ';--doi-tex:url(' . $tex . ')' ) . '"';
 		$inner = '<span class="doi-portal-door" aria-hidden="true"><span class="doi-portal-light"></span>'
@@ -249,7 +251,7 @@ function doi_portals_shortcode() {
 			? '<div' . $attrs . '>' . $inner . '</div>'
 			: '<a' . $attrs . ' href="' . esc_url( $url ) . '">' . $inner . '</a>';
 		if ( $i === $start ) {
-			$first = array( $p['name'], $cta, $url );
+			$first = array( $p['name'], $cta, $url, $p['desc'] );
 		}
 	}
 	$html .= '</div>';
@@ -258,6 +260,7 @@ function doi_portals_shortcode() {
 	$arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="%s"/></svg>';
 	$html .= '<div class="doi-portals-caption" aria-live="polite">'
 		. '<p class="doi-portals-name">' . esc_html( $first[0] ) . '</p>'
+		. '<p class="doi-portals-desc">' . esc_html( $first[3] ) . '</p>'
 		. '<a class="doi-portals-cta"' . ( '' !== $first[2] ? ' href="' . esc_url( $first[2] ) . '"' : ' aria-disabled="true"' ) . '>'
 		. '<span class="doi-portals-cta-text">' . esc_html( $first[1] ) . '</span>' . sprintf( $arrow, 'M5 12h14M13 6l6 6-6 6' ) . '</a>'
 		. '</div>';
@@ -312,6 +315,7 @@ function doi_portals_sanitize( $in ) {
 		$pid  = isset( $r['product_id'] ) ? absint( $r['product_id'] ) : 0;
 		$item = array(
 			'name'         => $name,
+			'desc'         => isset( $r['desc'] ) && '' !== trim( $r['desc'] ) ? sanitize_text_field( $r['desc'] ) : $def['desc'],
 			'color'        => ( isset( $r['color'] ) && sanitize_hex_color( $r['color'] ) ) ? strtoupper( sanitize_hex_color( $r['color'] ) ) : $def['color'],
 			'design'       => ( isset( $r['design'] ) && in_array( $r['design'], array( 'a', 'b', 'c', 'd' ), true ) ) ? $r['design'] : $def['design'],
 			'stage'        => ( isset( $r['stage'] ) && array_key_exists( $r['stage'], doi_portal_stages() ) ) ? $r['stage'] : 'soon',
@@ -470,6 +474,11 @@ function doi_portals_page() {
 						</table>
 						<button type="button" class="button doi-pa-add"><?php esc_html_e( 'Add an ordering window', 'door-open-intro' ); ?></button>
 					</div>
+
+					<label class="doi-pa-field"><?php esc_html_e( 'Short invitation under this door when it is in the middle', 'door-open-intro' ); ?>
+						<textarea rows="2" name="<?php echo esc_attr( $f ); ?>[desc]"><?php echo esc_textarea( $p['desc'] ); ?></textarea>
+						<span class="description"><?php esc_html_e( 'One or two lines on what lies behind this door. Leave empty for the original text.', 'door-open-intro' ); ?></span>
+					</label>
 
 					<label class="doi-pa-field"><?php esc_html_e( 'Button text under this door when it is in the middle', 'door-open-intro' ); ?>
 						<input type="text" name="<?php echo esc_attr( $f ); ?>[button]" value="<?php echo esc_attr( $p['button'] ); ?>" placeholder="<?php echo esc_attr( doi_portal_button_text( $cfg, array_merge( $p, array( 'button' => '' ) ) ) ); ?>">

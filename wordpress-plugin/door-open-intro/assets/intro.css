@@ -171,36 +171,12 @@
 	#doi-root .doi-caption { animation: none; }
 }
 
-/* skip intro: clearly visible over the warm door photo, on phones and desktops alike (same dark pill as the door button) */
-#doi-root .doi-skip,
-#doi-root .doi-skip:hover,
-#doi-root .doi-skip:focus {
-	right: 20px;
-	bottom: 20px;
-	padding: 11px 20px;
-	border: 1px solid rgba(255, 240, 215, .7);
-	background: rgba(40, 26, 16, .72);
-	color: #fbf3e6;
-	font-size: 13px;
-	font-weight: 600;
-	text-shadow: none;
-	box-shadow: 0 6px 18px rgba(0, 0, 0, .3);
-	-webkit-backdrop-filter: blur(6px);
-	backdrop-filter: blur(6px);
-	opacity: 1;
-}
-#doi-root .doi-skip:hover {
-	background: rgba(40, 26, 16, .9);
-	border-color: rgba(255, 240, 215, .95);
-}
+/* skip intro: the small, see-through pill from before (the client's wish); on phones it clears the home indicator */
 @media (max-width: 767px) {
 	#doi-root .doi-skip,
 	#doi-root .doi-skip:hover,
 	#doi-root .doi-skip:focus {
-		right: 16px;
-		bottom: calc(18px + env(safe-area-inset-bottom, 0px));
-		padding: 11px 18px;
-		font-size: 12px;
+		bottom: calc(16px + env(safe-area-inset-bottom, 0px));
 	}
 }
 

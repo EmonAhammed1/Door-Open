@@ -3,7 +3,7 @@
  * Plugin Name:       Door Open Intro
  * Plugin URI:        https://github.com/EmonAhammed1/Door-Open
  * Description:       A full-screen DRUMI threshold: the door's engraving ignites, the doors swing open and the visitor walks through into your page, already loaded behind it.
- * Version:           4.1.0
+ * Version:           4.7.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Door Open
@@ -13,13 +13,14 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DOI_VERSION', '4.6.9' );
+define( 'DOI_VERSION', '4.7.0' );
 define( 'DOI_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DOI_URL', plugin_dir_url( __FILE__ ) );
 define( 'DOI_OPTION', 'doi_intro' );
 
 require_once DOI_DIR . 'includes/admin.php';
 require_once DOI_DIR . 'includes/portals.php';
+require_once DOI_DIR . 'includes/home.php';
 
 function doi_defaults() {
 	return array(

@@ -45,6 +45,7 @@
 		if (!track || !N) return;
 		var captionEl = root.querySelector('.doi-portals-caption');
 		var nameEl = root.querySelector('.doi-portals-name');
+		var descEl = root.querySelector('.doi-portals-desc');
 		var cta = root.querySelector('.doi-portals-cta');
 		var ctaText = root.querySelector('.doi-portals-cta-text');
 		var dots = Array.prototype.slice.call(root.querySelectorAll('.doi-portals-dot'));
@@ -119,6 +120,7 @@
 			var href = el.getAttribute('data-href');
 			function apply() {
 				nameEl.textContent = name;
+				if (descEl) descEl.textContent = el.getAttribute('data-desc') || '';
 				ctaText.textContent = text;
 				if (href) {
 					cta.setAttribute('href', href);
