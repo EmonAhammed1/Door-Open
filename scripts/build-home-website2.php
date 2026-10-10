@@ -264,7 +264,7 @@ $pro = $split( 'DRUMI for professionals', '#F4EFE8', array(
 	$copy( '<p>Discover how the DRUMI method can help people uncover their own insights, connect with their inner guidance, and move towards change with greater confidence and a stronger sense of ownership.</p>' ),
 	$w( 'spacer', array( 'space' => $px( 30 ), 'space_mobile' => $px( 24 ) ) ),
 	$line_btn( 'Explore DRUMI for professionals', '#waitlist' ),
-), $split_photo( 'Professionals photo', 862, '#F4EFE8', 'left' ), true );
+), $photo_box( 'Professionals photo', 862, array( 600, 460, 320 ), array( 'background_overlay_background' => '' ), array( 'width' => $pc( 50 ), 'width_tablet' => $pc( 100 ), 'width_mobile' => $pc( 100 ) ) ), true ); // clear photo, no fade (the client's wish)
 
 /* =========================================================================================================
    existing sections: the new text from website 2.0
