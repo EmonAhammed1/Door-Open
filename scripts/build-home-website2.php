@@ -2,6 +2,10 @@
 /**
  * One-off: lays out the homepage (page 98) for "website 2.0" with Elementor containers and widgets only.
  * Run once on the server (Novamira execute-php); the page before it is kept in the meta _doi_elementor_backup_20261010.
+ *
+ * Do NOT run it again: the page has been refined in place since (clear photos without fades, alternating section
+ * backgrounds, the Awakening Journal opening as a full-width background photo media/journal-table.webp with the
+ * client's step photos media/step-*-2.webp). Re-running would rebuild from the old backup and undo those changes.
  */
 return (function () {
 $post_id = 98;
