@@ -252,7 +252,7 @@ $finder = $split( 'Find your portal', '#F4EFE8', array(
 	$solid_btn( 'Find your portal', '#find-your-portal', '#AE8850', '#8D6A37', 999, array( 'text_padding' => $box( 17, 34, 17, 34 ), 'button_box_shadow_box_shadow' => array( 'horizontal' => 0, 'vertical' => 14, 'blur' => 28, 'spread' => -16, 'color' => 'rgba(150,110,50,0.8)' ) ) + $typo( 'Playfair Display', array( 18, 18, 18 ), '400', 1.2 ) ),
 	$serif_line( 'A moment of reflection. A place to begin.', 'p', array( 18, 18, 18 ), $MUTED, $box( 18, 0, 0, 0 ) ),
 	$w( 'shortcode', array( 'shortcode' => '[drumi_portal_finder]' ) ),
-), $split_photo( 'Find your portal photo', 188, '#F4EFE8', 'right' ) );
+), $photo_box( 'Find your portal photo', 188, array( 600, 460, 320 ), array( 'background_overlay_background' => '' ), array( 'width' => $pc( 50 ), 'width_tablet' => $pc( 100 ), 'width_mobile' => $pc( 100 ) ) ) ); // clear photo, no fade (the client's wish)
 $finder['settings']['_element_id'] = 'find-your-portal-section';
 $finder['settings']['custom_css']  = "/* lands below the fixed site header when a button links here */\nselector { scroll-margin-top: 84px; }";
 
