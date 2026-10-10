@@ -182,11 +182,9 @@ $journal = $con( 'The Awakening Journal', array(
 			$title( 'Give yourself the first attention of the day.' ),
 			$copy( '<p>DRUMI is a dream and reflection journal.<br />Your personal journey, guided on paper.</p><p>A morning ritual to explore your dreams, reconnect with yourself, and let who you truly are guide how you live.</p>' ),
 		) ),
-		// a radial overlay: the journal clear in the middle, melting into the ivory on every side
+		// the journal photo stays clear (no fade overlay, the client's wish)
 		$photo_box( 'Journal photo', 804, array( 560, 420, 320 ), array(
-			'background_overlay_color' => 'rgba(251,248,244,0)', 'background_overlay_color_stop' => $pc( 28 ),
-			'background_overlay_color_b' => '#FBF8F4', 'background_overlay_color_b_stop' => $pc( 80 ),
-			'background_overlay_gradient_type' => 'radial', 'background_overlay_gradient_position' => 'center center',
+			'background_overlay_background' => '',
 		), array( 'width' => $pc( 50 ), 'width_tablet' => $pc( 48 ), 'width_mobile' => $pc( 100 ) ) ),
 	) ),
 	$con( 'Journal steps', array(
