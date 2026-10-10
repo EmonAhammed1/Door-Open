@@ -44,6 +44,9 @@ $typo = function ( $family, $sizes, $weight = '400', $lh = null, $extra = array(
 	return array_merge( $o, $extra );
 };
 
+/* Playfair Display draws old-style figures ("o1"); numbers here use lining figures, as in the reference */
+$LINING = array( 'custom_css' => "/* lining figures: 01, 02, 03 and the price */\nselector .elementor-heading-title { font-variant-numeric: lining-nums; }" );
+
 /* colours */
 $INK = '#2B2620'; $TEXT = '#4A3E33'; $MUTED = '#6B6558'; $GOLD = '#9C7A45'; $GOLD2 = '#B08D5A';
 $IVORY = '#FBF8F3'; $IVORY2 = '#F4EFE8'; $BROWN = '#4B2A18';
@@ -77,8 +80,8 @@ $copy = function ( $html, $sizes = array( 17, 16, 16 ) ) use ( $w, $typo, $px, $
 	return $w( 'text-editor', array_merge( array( 'editor' => $html, 'text_color' => $TEXT, 'paragraph_spacing' => $px( 14 ) ),
 		$typo( '', $sizes, '400', 1.75 ) ) );
 };
-$serif_line = function ( $text, $tag, $sizes, $color, $italic = true ) use ( $w, $typo ) {
-	return $w( 'heading', array_merge( array( 'title' => $text, 'header_size' => $tag, 'title_color' => $color ),
+$serif_line = function ( $text, $tag, $sizes, $color, $margin = null, $italic = true ) use ( $w, $typo ) {
+	return $w( 'heading', array_merge( array( 'title' => $text, 'header_size' => $tag, 'title_color' => $color ), $margin ? array( '_margin' => $margin ) : array(),
 		$typo( 'Cormorant Garamond', $sizes, '400', 1.4, $italic ? array( 'typography_font_style' => 'italic' ) : array() ) ) );
 };
 $arrow = array( 'selected_icon' => array( 'value' => 'fas fa-arrow-right', 'library' => 'fa-solid' ), 'icon_align' => 'row-reverse', 'icon_indent' => array( 'unit' => 'px', 'size' => 14, 'sizes' => array() ) );
@@ -133,9 +136,9 @@ $fade_linear = function ( $ivory, $angle ) use ( $pc ) {
 /* =========================================================================================================
    1. The Awakening Journal: "Meet DRUMI" and "How it works" in one, after the client's reference
    ========================================================================================================= */
-$step = function ( $no, $name, $line, $img, $last ) use ( $con, $w, $typo, $px, $pc, $box, $gap, $GOLD, $GOLD2, $INK, $MUTED, $resp ) {
+$step = function ( $no, $name, $line, $img, $last ) use ( $con, $w, $typo, $px, $pc, $box, $gap, $GOLD, $GOLD2, $INK, $MUTED, $resp, $LINING ) {
 	$row = array(
-		$w( 'heading', array_merge( array( 'title' => $no, 'header_size' => 'p', 'title_color' => $GOLD ), $typo( 'Playfair Display', array( 40, 34, 32 ), '400', 1 ) ) ),
+		$w( 'heading', array_merge( array( 'title' => $no, 'header_size' => 'p', 'title_color' => $GOLD ), $typo( 'Playfair Display', array( 40, 34, 32 ), '400', 1 ), $LINING ) ),
 		$w( 'heading', array_merge( array( 'title' => $name, 'header_size' => 'h3', 'title_color' => $INK ), $typo( 'Playfair Display', array( 40, 34, 32 ), '400', 1 ) ) ),
 	);
 	if ( ! $last ) {
@@ -154,8 +157,8 @@ $step = function ( $no, $name, $line, $img, $last ) use ( $con, $w, $typo, $px, 
 			'image_box_shadow_box_shadow' => array( 'horizontal' => 0, 'vertical' => 24, 'blur' => 40, 'spread' => -28, 'color' => 'rgba(80,55,25,0.55)' ),
 		) ),
 		$con( 'Step title', array( 'flex_direction' => 'row', 'flex_wrap' => 'nowrap', 'flex_align_items' => 'center', 'flex_gap' => $gap( 16 ), 'margin' => $box( 26, 0, 8, 0 ), 'margin_mobile' => $box( 20, 0, 6, 0 ) ), $row ),
-		$w( 'text-editor', array_merge( array( 'editor' => '<p>' . $line . '</p>', 'text_color' => $MUTED,
-			'_padding' => $box( 0, 0, 0, 62 ), '_padding_tablet' => $box( 0, 0, 0, 54 ), '_padding_mobile' => $box( 0, 0, 0, 52 ) ),
+		$w( 'text-editor', array_merge( array( 'editor' => '<p>' . $line . '</p>', 'text_color' => $MUTED, 'paragraph_spacing' => $px( 0 ),
+			'_padding' => $box( 0, 0, 0, 62 ), '_padding_tablet' => $box( 0, 0, 0, 0 ), '_padding_mobile' => $box( 0, 0, 0, 52 ) ),
 			$typo( 'Cormorant Garamond', array( 21, 19, 20 ), '400', 1.4 ) ) ),
 	) );
 };
@@ -181,8 +184,8 @@ $journal = $con( 'The Awakening Journal', array(
 		) ),
 		// a radial overlay: the journal clear in the middle, melting into the ivory on every side
 		$photo_box( 'Journal photo', 804, array( 560, 420, 320 ), array(
-			'background_overlay_color' => 'rgba(251,248,244,0)', 'background_overlay_color_stop' => $pc( 38 ),
-			'background_overlay_color_b' => '#FBF8F4', 'background_overlay_color_b_stop' => $pc( 72 ),
+			'background_overlay_color' => 'rgba(251,248,244,0)', 'background_overlay_color_stop' => $pc( 34 ),
+			'background_overlay_color_b' => '#FBF8F4', 'background_overlay_color_b_stop' => $pc( 92 ),
 			'background_overlay_gradient_type' => 'radial', 'background_overlay_gradient_position' => 'center center',
 		), array( 'width' => $pc( 50 ), 'width_tablet' => $pc( 48 ), 'width_mobile' => $pc( 100 ) ) ),
 	) ),
@@ -200,9 +203,9 @@ $journal = $con( 'The Awakening Journal', array(
 		'flex_gap' => $gap( 36 ), 'flex_gap_mobile' => $gap( 18 ),
 		'margin' => $box( 72, 0, 0, 0 ), 'margin_mobile' => $box( 52, 0, 0, 0 ), 'animation' => 'fadeInUp',
 	), array(
-		$w( 'heading', array_merge( array( 'title' => '€69', 'header_size' => 'p', 'title_color' => $GOLD ), $typo( 'Playfair Display', array( 40, 38, 36 ), '400', 1 ) ) ),
+		$w( 'heading', array_merge( array( 'title' => '€69', 'header_size' => 'p', 'title_color' => $GOLD ), $typo( 'Playfair Display', array( 40, 38, 36 ), '400', 1 ), $LINING ) ),
 		$solid_btn( 'Order your journal', home_url( '/demo/' ), $BROWN, '#2F190D', 8, array( 'text_padding' => $box( 22, 52, 22, 52 ) ) ),
-		$w( 'text-editor', array_merge( array( 'editor' => '<p>No dream experience needed.<br />Go at your own pace.</p>', 'text_color' => $MUTED,
+		$w( 'text-editor', array_merge( array( 'editor' => '<p>No dream experience needed.<br />Go at your own pace.</p>', 'text_color' => $MUTED, 'paragraph_spacing' => $px( 0 ),
 			'align_mobile' => 'center',
 			'_border_border' => 'solid', '_border_width' => $box( 0, 0, 0, 1 ), '_border_width_mobile' => $box( 0, 0, 0, 0 ), '_border_color' => 'rgba(43,38,32,0.35)',
 			'_padding' => $box( 6, 0, 6, 32 ), '_padding_mobile' => $box( 0, 0, 0, 0 ) ),
@@ -249,7 +252,7 @@ $finder = $split( 'Find your portal', '#F4EFE8', array(
 	$copy( '<p>Start with what’s on your mind. A few thoughtful questions help you explore what you need right now — and discover the DRUMI journey that speaks to you.</p>' ),
 	$w( 'spacer', array( 'space' => $px( 30 ), 'space_mobile' => $px( 24 ) ) ),
 	$solid_btn( 'Find your portal', '#find-your-portal', '#AE8850', '#8D6A37', 999, array( 'text_padding' => $box( 17, 34, 17, 34 ), 'button_box_shadow_box_shadow' => array( 'horizontal' => 0, 'vertical' => 14, 'blur' => 28, 'spread' => -16, 'color' => 'rgba(150,110,50,0.8)' ) ) + $typo( 'Playfair Display', array( 18, 18, 18 ), '400', 1.2 ) ),
-	$serif_line( 'A moment of reflection. A place to begin.', 'p', array( 18, 18, 18 ), $MUTED ) + array( '_margin' => $box( 18, 0, 0, 0 ) ),
+	$serif_line( 'A moment of reflection. A place to begin.', 'p', array( 18, 18, 18 ), $MUTED, $box( 18, 0, 0, 0 ) ),
 	$w( 'shortcode', array( 'shortcode' => '[drumi_portal_finder]' ) ),
 ), $split_photo( 'Find your portal photo', 188, '#F4EFE8', 'right' ) );
 $finder['settings']['_element_id'] = 'find-your-portal-section';
@@ -259,7 +262,7 @@ $pro = $split( 'DRUMI for professionals', '#FBF8F4', array(
 	$kicker( 'DRUMI for coaches & professionals' ),
 	$rule(),
 	$title( 'Bring the power of dreams into your practice.' ),
-	$serif_line( 'Open a new starting point for reflection in your coaching, training or group sessions.', 'p', array( 23, 22, 21 ), '#5A4632' ) + array( '_margin' => $box( 0, 0, 16, 0 ) ),
+	$serif_line( 'Open a new starting point for reflection in your coaching, training or group sessions.', 'p', array( 23, 22, 21 ), '#5A4632', $box( 0, 0, 18, 0 ) ),
 	$copy( '<p>Discover how the DRUMI method can help people uncover their own insights, connect with their inner guidance, and move towards change with greater confidence and a stronger sense of ownership.</p>' ),
 	$w( 'spacer', array( 'space' => $px( 30 ), 'space_mobile' => $px( 24 ) ) ),
 	$line_btn( 'Explore DRUMI for professionals', '#waitlist' ),
@@ -281,6 +284,7 @@ $set = array(
 	'8bb36af' => array( 'editor' => '<p>Ready to break free from repeating patterns, feel more confident in your choices, or build relationships where you can be yourself?</p><p>Each DRUMI portal invites you to explore a theme through your dreams — helping you understand what holds you back, what you need, and how you want to move forward.</p>' ),
 	'2c05d15' => array( 'title' => 'Which dream journey is calling you?' ),
 	'209300e' => array( '_element_id' => 'waitlist' ),
+	'7ba600c' => array( 'padding' => $box( 90, 0, 90, 120 ) ),
 );
 $found = array();
 $apply = function ( &$els ) use ( &$apply, $set, &$found ) {
