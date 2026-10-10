@@ -1,25 +1,16 @@
 <?php
 /**
- * Homepage sections from "website 2.0": the styles for the Elementor sections built for it (The Awakening Journal,
- * The DRUMI Method, Find your portal, DRUMI for professionals) and the portal finder those sections open.
+ * The portal finder for the homepage's "Not sure which door to open?" section (website 2.0).
  *
- * The sections themselves are ordinary Elementor containers and widgets, so their text and images stay editable in
- * Elementor; they are tied to assets/home.css by their CSS classes (doi-aj, doi-method, doi-finder, doi-pro).
+ * The homepage sections themselves are built only from Elementor containers and widgets, with their layout, type,
+ * colours and image fades set in Elementor, so everything about them can be changed there; see
+ * scripts/build-home-website2.php in the repository for how they were first laid out.
  *
  * [drumi_portal_finder] prints the finder: a few questions in a dialog that suggest a matching portal, say why it
  * resonates and offer the next step. Any link to #find-your-portal opens it.
  */
 
 defined( 'ABSPATH' ) || exit;
-
-add_action( 'wp_enqueue_scripts', 'doi_enqueue_home' );
-function doi_enqueue_home() {
-	if ( is_admin() || ! is_front_page() ) {
-		return;
-	}
-	wp_enqueue_style( 'doi-fonts', 'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@1,400&display=block', array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceVersion.MissingVersion
-	wp_enqueue_style( 'doi-home', DOI_URL . 'assets/home.css', array(), DOI_VERSION );
-}
 
 /**
  * The finder's questions. Each answer adds points to portals, by their position under DRUMI Portals
