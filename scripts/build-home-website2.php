@@ -236,14 +236,14 @@ $split_photo = function ( $title_, $att, $bg, $side ) use ( $photo_box, $fade_li
 	return $photo_box( $title_, $att, array( 600, 460, 320 ), $fade_linear( $bg, 'right' === $side ? 90 : 270 ), array( 'width' => $pc( 50 ), 'width_tablet' => $pc( 100 ), 'width_mobile' => $pc( 100 ) ) );
 };
 
-$method = $split( 'The DRUMI Method', '#FBF8F4', array(
+$method = $split( 'The DRUMI Method', '#F4EFE8', array(
 	$kicker( 'The DRUMI Method' ),
 	$rule(),
 	$title( 'A deeper connection begins within.' ),
 	$copy( '<p>Behind DRUMI is a carefully crafted method that gently guides you into your inner world. Thoughtful questions invite you to explore your dreams, recognise patterns, and listen to what needs your attention.</p><p>As you bring those discoveries into your choices and actions, something begins to shift. This is where manifestation begins: giving what you discover within a place in the life you live.</p>' ),
 	$w( 'spacer', array( 'space' => $px( 30 ), 'space_mobile' => $px( 24 ) ) ),
 	$line_btn( 'Explore the world behind DRUMI', home_url( '/demo/' ) ),
-), $split_photo( 'Method photo', 88, '#FBF8F4', 'right' ) );
+), $split_photo( 'Method photo', 88, '#F4EFE8', 'right' ) );
 
 $finder = $split( 'Find your portal', '#F4EFE8', array(
 	$kicker( 'Find your portal' ),
@@ -258,7 +258,7 @@ $finder = $split( 'Find your portal', '#F4EFE8', array(
 $finder['settings']['_element_id'] = 'find-your-portal-section';
 $finder['settings']['custom_css']  = "/* lands below the fixed site header when a button links here */\nselector { scroll-margin-top: 84px; }";
 
-$pro = $split( 'DRUMI for professionals', '#FBF8F4', array(
+$pro = $split( 'DRUMI for professionals', '#F4EFE8', array(
 	$kicker( 'DRUMI for coaches & professionals' ),
 	$rule(),
 	$title( 'Bring the power of dreams into your practice.' ),
@@ -266,7 +266,7 @@ $pro = $split( 'DRUMI for professionals', '#FBF8F4', array(
 	$copy( '<p>Discover how the DRUMI method can help people uncover their own insights, connect with their inner guidance, and move towards change with greater confidence and a stronger sense of ownership.</p>' ),
 	$w( 'spacer', array( 'space' => $px( 30 ), 'space_mobile' => $px( 24 ) ) ),
 	$line_btn( 'Explore DRUMI for professionals', '#waitlist' ),
-), $split_photo( 'Professionals photo', 862, '#FBF8F4', 'left' ), true );
+), $split_photo( 'Professionals photo', 862, '#F4EFE8', 'left' ), true );
 
 /* =========================================================================================================
    existing sections: the new text from website 2.0
