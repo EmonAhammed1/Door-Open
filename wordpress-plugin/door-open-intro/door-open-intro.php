@@ -13,7 +13,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DOI_VERSION', '4.7.3' );
+define( 'DOI_VERSION', '4.7.4' );
 define( 'DOI_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DOI_URL', plugin_dir_url( __FILE__ ) );
 define( 'DOI_OPTION', 'doi_intro' );
@@ -49,8 +49,23 @@ function doi_settings() {
 }
 
 function doi_image_url( $name ) {
+	// a lighter WebP copy beside the photograph is sent instead when there is one
+	$webp = preg_replace( '/\.(jpe?g|png)$/i', '.webp', $name );
+	if ( $webp !== $name && file_exists( DOI_DIR . 'assets/door/' . $webp ) ) {
+		$name = $webp;
+	}
 	// versioned so that replacing a photo reaches visitors who already have the old one cached
 	return DOI_URL . 'assets/door/' . $name . '?ver=' . DOI_VERSION;
+}
+
+/**
+ * A page cache (LiteSpeed Cache) keeps whole pages, and with them the door's text and the portals; when these
+ * settings are saved, the cached pages are dropped so visitors see the change straight away.
+ */
+add_action( 'update_option_' . DOI_OPTION, 'doi_purge_page_cache' );
+add_action( 'update_option_doi_portals', 'doi_purge_page_cache' );
+function doi_purge_page_cache() {
+	do_action( 'litespeed_purge_all' );
 }
 
 /**
