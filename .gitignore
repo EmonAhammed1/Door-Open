@@ -8,3 +8,6 @@ dist/
 
 .vercel
 scratch/
+
+# holds a live WordPress Application Password
+.mcp.json

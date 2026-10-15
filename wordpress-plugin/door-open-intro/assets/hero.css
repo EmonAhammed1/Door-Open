@@ -1,0 +1,165 @@
+/* Homepage hero: the corridor the door opens onto. Scrolling walks down it, around the corner to the sea.
+   The track is tall only once hero.js is running; without it the stage is a full-screen still of the first frame. */
+.doi-hero {
+	position: relative;
+	display: block;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+}
+.doi-hero-track {
+	position: relative;
+	width: 100%;
+	background: #efe6d8;
+}
+.doi-hero-track.doi-hero-on {
+	height: 400vh;
+}
+.doi-hero-stage {
+	position: sticky;
+	top: 0;
+	width: 100%;
+	height: 100vh;
+	overflow: hidden;
+	/* the first frame of whichever video is in use, set on .doi-hero by the plugin */
+	background: #efe6d8 var(--doi-hero-poster-d, url("hero/desktop/001.webp")) 50% 50% / cover no-repeat;
+}
+@media (max-aspect-ratio: 3/4) {
+	.doi-hero-track.doi-hero-on {
+		height: 340vh;
+	}
+	.doi-hero-stage {
+		background-image: var(--doi-hero-poster-m, url("hero/mobile/001.webp"));
+	}
+}
+
+.doi-hero-canvas {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	display: block;
+}
+
+/* the last stretch of the walk softens into the ivory of the text below */
+.doi-hero-fade {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 24%;
+	background: linear-gradient(to bottom, rgba(244, 239, 232, 0), #f4efe8);
+	opacity: 0;
+	pointer-events: none;
+}
+
+.doi-hero-cue {
+	position: absolute;
+	left: 50%;
+	bottom: 30px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+	transform: translateX(-50%);
+	pointer-events: none;
+	transition: opacity .5s ease;
+	font-family: Cinzel, 'Trajan Pro', Georgia, serif;
+	font-size: 11px;
+	font-weight: 500;
+	line-height: 1;
+	letter-spacing: .32em;
+	padding-left: .32em;
+	text-transform: uppercase;
+	color: #5a4430;
+	text-shadow: 0 0 10px rgba(255, 250, 240, .9), 0 1px 0 rgba(255, 255, 255, .6);
+}
+.doi-hero-cue::after {
+	content: "";
+	width: 1px;
+	height: 38px;
+	background: linear-gradient(to bottom, rgba(90, 68, 48, 0), rgba(90, 68, 48, .75) 45%, rgba(90, 68, 48, 0));
+	background-size: 100% 200%;
+	animation: doi-hero-cue 2.2s ease-in-out infinite;
+}
+.doi-hero-cue.is-hidden {
+	opacity: 0;
+}
+@keyframes doi-hero-cue {
+	0% { background-position: 0 100%; }
+	100% { background-position: 0 -100%; }
+}
+
+/* "Welcome home": website text below the corridor, not part of the picture */
+.doi-hero-welcome {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 18px;
+	padding: 96px 24px 104px;
+	background: #f4efe8;
+	text-align: center;
+}
+/* a quiet line setting "Welcome home" apart from the section below */
+.doi-hero-welcome::after {
+	content: "";
+	position: absolute;
+	left: 36px;
+	right: 36px;
+	bottom: 56px;
+	height: 1px;
+	background: rgba(43, 38, 32, .22);
+}
+.doi-hero .doi-hero-title {
+	margin: 0;
+	padding: 0 0 0 .26em;
+	font-family: Cinzel, 'Trajan Pro', Georgia, serif;
+	font-size: clamp(30px, 4.2vw, 58px);
+	font-weight: 500;
+	font-style: normal;
+	line-height: 1.1;
+	letter-spacing: .26em;
+	text-transform: uppercase;
+	color: #2b2620;
+}
+.doi-hero .doi-hero-rule {
+	display: block;
+	width: 56px;
+	height: 1px;
+	background: #b08d5a;
+}
+.doi-hero .doi-hero-sub {
+	margin: 0;
+	padding: 0;
+	font-family: 'Cormorant Garamond', Garamond, Georgia, serif;
+	font-size: clamp(19px, 1.9vw, 26px);
+	font-weight: 400;
+	font-style: italic;
+	line-height: 1.4;
+	letter-spacing: .02em;
+	color: #6b4f35;
+}
+@media (max-width: 767px) {
+	.doi-hero-welcome {
+		gap: 14px;
+		padding: 64px 20px 72px;
+	}
+	.doi-hero-welcome::after {
+		left: 20px;
+		right: 20px;
+		bottom: 36px;
+	}
+	.doi-hero .doi-hero-title {
+		font-size: 27px;
+		letter-spacing: .2em;
+		padding-left: .2em;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.doi-hero-cue::after {
+		animation: none;
+	}
+}

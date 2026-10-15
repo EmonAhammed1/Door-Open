@@ -1,0 +1,347 @@
+/* DRUMI portal finder (assets/finder.js): a calm ivory card over the dimmed page. */
+html.doi-finder-open {
+	overflow: hidden;
+}
+.doi-finder-dialog {
+	box-sizing: border-box;
+	width: min(620px, calc(100vw - 32px));
+	max-height: calc(100dvh - 32px);
+	margin: auto;
+	padding: 0;
+	overflow: auto;
+	border: 1px solid rgba(176, 141, 90, .35);
+	border-radius: 14px;
+	background: #fbf8f3 radial-gradient(120% 70% at 50% 0%, #fffdf8 0%, rgba(251, 248, 243, 0) 70%);
+	color: #2b2620;
+	box-shadow: 0 40px 90px -30px rgba(60, 40, 20, .45);
+}
+.doi-finder-dialog[open] {
+	animation: doi-finder-in .45s cubic-bezier(.2, .7, .2, 1) both;
+}
+.doi-finder-dialog::backdrop {
+	background: rgba(43, 32, 22, .42);
+	-webkit-backdrop-filter: blur(4px);
+	backdrop-filter: blur(4px);
+}
+@keyframes doi-finder-in {
+	from { opacity: 0; transform: translateY(14px) scale(.985); }
+	to { opacity: 1; transform: none; }
+}
+
+.doi-finder-close {
+	position: absolute;
+	top: 14px;
+	right: 14px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: transparent;
+	color: #6b5a48;
+	cursor: pointer;
+}
+.doi-finder-close:hover,
+.doi-finder-close:focus-visible {
+	background: rgba(176, 141, 90, .14);
+	color: #2b2620;
+}
+.doi-finder-close svg {
+	width: 20px;
+	height: 20px;
+}
+
+.doi-finder-body {
+	padding: 48px 48px 40px;
+	transition: opacity .22s ease, transform .22s ease;
+}
+.doi-finder-body.is-swapping {
+	opacity: 0;
+	transform: translateY(6px);
+}
+
+.doi-finder-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 18px;
+	padding-right: 36px;
+}
+.doi-finder-dialog .doi-finder-kicker {
+	margin: 0;
+	font-family: Cinzel, 'Trajan Pro', Georgia, serif;
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 1.3;
+	letter-spacing: .26em;
+	text-transform: uppercase;
+	color: #9c7a45;
+}
+.doi-finder-progress {
+	display: flex;
+	gap: 6px;
+}
+.doi-finder-progress span {
+	width: 22px;
+	height: 2px;
+	border-radius: 2px;
+	background: rgba(176, 141, 90, .25);
+}
+.doi-finder-progress span.is-done {
+	background: #b08d5a;
+}
+
+.doi-finder-dialog .doi-finder-title,
+.doi-finder-dialog .doi-finder-result-name {
+	margin: 0 0 26px;
+	font-family: 'Playfair Display', Georgia, serif;
+	font-size: 32px;
+	font-weight: 400;
+	line-height: 1.2;
+	text-transform: none;
+	letter-spacing: 0;
+	color: #2b2620;
+	text-wrap: balance;
+}
+
+.doi-finder-options {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+.doi-finder-dialog .doi-finder-option {
+	display: block;
+	width: 100%;
+	margin: 0;
+	padding: 16px 20px;
+	border: 1px solid rgba(176, 141, 90, .38);
+	border-radius: 10px;
+	background: rgba(255, 253, 248, .75);
+	color: #3b3027;
+	font-family: 'Cormorant Garamond', Garamond, Georgia, serif;
+	font-size: 20px;
+	font-weight: 400;
+	font-style: normal;
+	line-height: 1.35;
+	text-align: left;
+	text-transform: none;
+	letter-spacing: 0;
+	cursor: pointer;
+	transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
+}
+.doi-finder-dialog .doi-finder-option:hover,
+.doi-finder-dialog .doi-finder-option:focus-visible {
+	border-color: #b08d5a;
+	background: #fff;
+	color: #2b2620;
+	transform: translateX(3px);
+	outline: none;
+}
+.doi-finder-dialog .doi-finder-option.is-chosen {
+	border-color: #9c7a45;
+	background: #f6ecdb;
+}
+
+.doi-finder-dialog .doi-finder-back {
+	display: inline-block;
+	margin: 22px 0 0;
+	padding: 4px 0;
+	border: 0;
+	border-bottom: 1px solid rgba(43, 38, 32, .35);
+	border-radius: 0;
+	background: none;
+	color: #6b5a48;
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 500;
+	letter-spacing: .08em;
+	text-transform: uppercase;
+	cursor: pointer;
+}
+.doi-finder-dialog .doi-finder-back:hover {
+	color: #2b2620;
+	background: none;
+}
+
+/* the result: a small lit arch in the portal's colour, its name, and why */
+.doi-finder-result {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+}
+.doi-finder-arch {
+	position: relative;
+	width: 64px;
+	height: 92px;
+	margin-bottom: 22px;
+	border-radius: 32px 32px 4px 4px;
+	background: linear-gradient(180deg, color-mix(in srgb, var(--pc) 70%, #fff) 0%, var(--pc) 100%);
+	box-shadow: 0 0 0 6px rgba(255, 252, 245, .9), 0 0 0 7px rgba(176, 141, 90, .45), 0 0 46px 6px rgba(240, 206, 140, .55);
+}
+.doi-finder-arch::after {
+	content: "";
+	position: absolute;
+	top: 14px;
+	bottom: 6px;
+	left: 50%;
+	width: 2px;
+	transform: translateX(-50%);
+	background: linear-gradient(180deg, rgba(255, 244, 214, 0), #fff3d4 40%, rgba(255, 244, 214, .2));
+	box-shadow: 0 0 12px 3px rgba(255, 228, 170, .8);
+}
+.doi-finder-result .doi-finder-kicker {
+	margin-bottom: 10px;
+}
+.doi-finder-dialog .doi-finder-result-name {
+	margin-bottom: 10px;
+	font-size: 36px;
+	outline: none;
+}
+/* what the suggested portal is right now: "The first journal", "Coming later" */
+.doi-finder-dialog .doi-finder-status {
+	margin: 0 0 14px;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.3;
+	letter-spacing: .24em;
+	text-transform: uppercase;
+	color: #9a8f7d;
+}
+.doi-finder-dialog .doi-finder-desc {
+	max-width: 30em;
+	margin: 0 0 26px;
+	font-family: 'Cormorant Garamond', Garamond, Georgia, serif;
+	font-size: 21px;
+	font-style: italic;
+	line-height: 1.4;
+	color: #5a4632;
+	text-wrap: balance;
+}
+.doi-finder-why {
+	width: 100%;
+	margin: 0 0 28px;
+	padding: 22px 24px;
+	border-top: 1px solid rgba(176, 141, 90, .3);
+	border-bottom: 1px solid rgba(176, 141, 90, .3);
+	text-align: left;
+}
+.doi-finder-dialog .doi-finder-label {
+	margin: 0 0 8px;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: .2em;
+	text-transform: uppercase;
+	color: #9a8f7d;
+}
+.doi-finder-dialog .doi-finder-shared {
+	margin: 0 0 18px;
+	padding: 0;
+	list-style: none;
+}
+.doi-finder-dialog .doi-finder-shared li {
+	position: relative;
+	margin: 0 0 4px;
+	padding-left: 18px;
+	font-size: 15px;
+	line-height: 1.55;
+	color: #4a3a2c;
+}
+.doi-finder-dialog .doi-finder-shared li::before {
+	content: "";
+	position: absolute;
+	top: .7em;
+	left: 2px;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: #c9a46a;
+}
+.doi-finder-dialog .doi-finder-reason {
+	margin: 0;
+	font-size: 15px;
+	line-height: 1.65;
+	color: #4a3a2c;
+}
+
+.doi-finder-next {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 12px;
+}
+.doi-finder-dialog .doi-finder-cta {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	padding: 14px 26px;
+	border: 1px solid #4b2a18;
+	border-radius: 999px;
+	background: #4b2a18;
+	color: #fbf3e6;
+	font-family: 'Playfair Display', Georgia, serif;
+	font-size: 17px;
+	line-height: 1.2;
+	text-decoration: none;
+	transition: background-color .2s ease, color .2s ease, box-shadow .2s ease;
+}
+.doi-finder-dialog .doi-finder-cta:hover,
+.doi-finder-dialog .doi-finder-cta:focus-visible {
+	background: #2f190d;
+	color: #fff;
+	box-shadow: 0 10px 24px -12px rgba(75, 42, 24, .8);
+}
+.doi-finder-dialog .doi-finder-cta.is-quiet {
+	background: transparent;
+	color: #4b2a18;
+}
+.doi-finder-dialog .doi-finder-cta.is-quiet:hover,
+.doi-finder-dialog .doi-finder-cta.is-quiet:focus-visible {
+	background: rgba(75, 42, 24, .06);
+	color: #2b2620;
+}
+.doi-finder-cta svg {
+	width: 18px;
+	height: 18px;
+	flex: none;
+}
+
+@media (max-width: 600px) {
+	.doi-finder-body {
+		padding: 40px 22px 30px;
+	}
+	.doi-finder-dialog .doi-finder-title {
+		font-size: 26px;
+	}
+	.doi-finder-dialog .doi-finder-result-name {
+		font-size: 30px;
+	}
+	.doi-finder-dialog .doi-finder-option {
+		padding: 14px 16px;
+		font-size: 19px;
+	}
+	.doi-finder-why {
+		padding: 18px 4px;
+	}
+	.doi-finder-next {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.doi-finder-dialog .doi-finder-cta {
+		justify-content: center;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.doi-finder-dialog[open] {
+		animation: none;
+	}
+	.doi-finder-body,
+	.doi-finder-dialog .doi-finder-option {
+		transition: none;
+	}
+}

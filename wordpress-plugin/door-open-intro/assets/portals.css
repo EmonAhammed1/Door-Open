@@ -1,0 +1,542 @@
+/* The DRUMI portals: one door per journey, printed by [drumi_portals] from the settings in DRUMI Portals, as a ring
+   that turns: the active door stands in the middle, larger and glowing, the others step back smaller and darker.
+   Every door is a grey carving (assets/door/portal-*.webp) laid over its book colour with "overlay", so a colour
+   is a setting rather than an image, and the same carving doubles as the mask that gives the door its arch. */
+.doi-portals {
+	--doi-bleed: 48px;
+	--door-w: clamp(210px, 19vw, 290px);
+	--gap: 30px;
+	position: relative;
+	width: 100%;
+}
+@media (max-width: 767px) {
+	.doi-portals {
+		--doi-bleed: 20px;
+		--door-w: clamp(150px, 46vw, 205px);
+		--gap: 14px;
+	}
+}
+
+/* the ring: every door stands on the same floor line, centred, and is moved into place (portals.js keeps
+   these in step as it turns; the data-pos rules below are only where they start, before the script runs) */
+.doi-portals-track {
+	position: relative;
+	height: calc(var(--door-w) * 2.0865 + 44px);
+	margin: 0 calc(-1 * var(--doi-bleed));
+	overflow-x: clip;
+	touch-action: pan-y;
+	cursor: grab;
+	user-select: none;
+	-webkit-user-select: none;
+}
+.doi-portals-track.is-dragging {
+	cursor: grabbing;
+}
+.doi-portals-track::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	bottom: 4px;
+	width: calc(var(--door-w) * 1.5);
+	height: 26px;
+	transform: translateX(-50%);
+	background: radial-gradient(ellipse at center, rgba(120, 82, 34, .26), rgba(120, 82, 34, 0) 70%);
+	pointer-events: none;
+}
+
+.doi-portal {
+	position: absolute;
+	left: 50%;
+	bottom: 14px;
+	z-index: 1;
+	display: block;
+	width: var(--door-w);
+	margin-left: calc(var(--door-w) / -2);
+	color: inherit;
+	text-decoration: none !important;
+	transform-origin: 50% 100%;
+	opacity: 0;
+	transition: transform .75s cubic-bezier(.22, .8, .24, 1), opacity .5s ease;
+	-webkit-tap-highlight-color: transparent;
+	-webkit-user-drag: none;
+}
+.doi-portals-track.is-dragging .doi-portal {
+	transition: none;
+}
+.doi-portal[data-pos="0"] { transform: none; opacity: 1; z-index: 5; }
+.doi-portal[data-pos="1"] { transform: translateX(calc(var(--door-w) * .9 + var(--gap))) scale(.8); opacity: 1; z-index: 4; }
+.doi-portal[data-pos="-1"] { transform: translateX(calc(var(--door-w) * -.9 - var(--gap))) scale(.8); opacity: 1; z-index: 4; }
+.doi-portal[data-pos="2"] { transform: translateX(calc(var(--door-w) * 1.62 + var(--gap) * 2)) scale(.64); opacity: .75; z-index: 3; }
+.doi-portal[data-pos="-2"] { transform: translateX(calc(var(--door-w) * -1.62 - var(--gap) * 2)) scale(.64); opacity: .75; z-index: 3; }
+/* wide screens: past the second step the doors stay that size and carry on out to the edges */
+@media (min-width: 1025px) {
+	.doi-portal[data-pos="2"],
+	.doi-portal[data-pos="-2"] { opacity: 1; }
+	.doi-portal[data-pos="3"] { transform: translateX(calc(var(--door-w) * 2.26 + var(--gap) * 3)) scale(.64); opacity: 1; z-index: 2; }
+	.doi-portal[data-pos="-3"] { transform: translateX(calc(var(--door-w) * -2.26 - var(--gap) * 3)) scale(.64); opacity: 1; z-index: 2; }
+	.doi-portal[data-pos="4"] { transform: translateX(calc(var(--door-w) * 2.9 + var(--gap) * 4)) scale(.64); opacity: 1; z-index: 1; }
+	.doi-portal[data-pos="-4"] { transform: translateX(calc(var(--door-w) * -2.9 - var(--gap) * 4)) scale(.64); opacity: 1; z-index: 1; }
+	.doi-portal[data-pos="5"] { transform: translateX(calc(var(--door-w) * 3.54 + var(--gap) * 5)) scale(.64); opacity: .5; z-index: 1; }
+	.doi-portal[data-pos="-5"] { transform: translateX(calc(var(--door-w) * -3.54 - var(--gap) * 5)) scale(.64); opacity: .5; z-index: 1; }
+}
+.doi-portal:focus-visible {
+	outline: 2px solid #b08d5a;
+	outline-offset: 8px;
+	border-radius: 10px;
+}
+
+.doi-portal-door {
+	position: relative;
+	display: block;
+	width: 100%;
+	aspect-ratio: 370 / 772;
+	perspective: 1100px;
+	transition: transform .45s cubic-bezier(.2, .7, .3, 1), filter .6s ease;
+}
+
+/* the light behind the leaves: only seen when a portal stands ajar or swings open */
+.doi-portal-light {
+	position: absolute;
+	inset: 0;
+	background: radial-gradient(ellipse 62% 56% at 50% 58%, #fffaf0 0%, #f8e4b8 34%, #e2b977 64%, #b58947 100%);
+	-webkit-mask: var(--doi-tex) 0 0 / 100% 100% no-repeat;
+	mask: var(--doi-tex) 0 0 / 100% 100% no-repeat;
+}
+
+.doi-portal-leaf {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 50%;
+	background-color: var(--pc, #b8a27c);
+	background-image: var(--doi-tex);
+	background-size: 200% 100%;
+	background-repeat: no-repeat;
+	background-blend-mode: overlay;
+	-webkit-mask-image: var(--doi-tex);
+	mask-image: var(--doi-tex);
+	-webkit-mask-size: 200% 100%;
+	mask-size: 200% 100%;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	backface-visibility: hidden;
+	transition: transform .75s cubic-bezier(.65, 0, .35, 1);
+	will-change: transform;
+}
+/* very light colours (the ivory Awakening) sit a shade warmer underneath, or "overlay" washes the carving out */
+.doi-portal.is-light .doi-portal-leaf {
+	background-color: color-mix(in srgb, var(--pc) 82%, #8a6d45);
+}
+.doi-portal-leaf.is-left {
+	left: 0;
+	background-position: 0 0;
+	-webkit-mask-position: 0 0;
+	mask-position: 0 0;
+	transform-origin: left center;
+}
+.doi-portal-leaf.is-right {
+	right: 0;
+	background-position: 100% 0;
+	-webkit-mask-position: 100% 0;
+	mask-position: 100% 0;
+	transform-origin: right center;
+}
+
+/* light leaking through the seam of the active door: it is ready to open */
+.doi-portal-seam {
+	position: absolute;
+	left: 50%;
+	top: 1.5%;
+	bottom: 1%;
+	z-index: 2;
+	width: 3px;
+	margin-left: -1.5px;
+	border-radius: 2px;
+	background: linear-gradient(to bottom, rgba(255, 246, 224, 0), #fff4d8 18%, #ffe6ad 72%, rgba(255, 230, 173, 0));
+	box-shadow: 0 0 10px 2px rgba(255, 220, 150, .75), 0 0 28px 7px rgba(255, 210, 130, .35);
+	opacity: 0;
+	transition: opacity .6s ease;
+	pointer-events: none;
+}
+
+/* the stage of a side door, written small on it (the active door's name is under the ring instead) */
+.doi-portal-tag {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 6%;
+	z-index: 2;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.2;
+	letter-spacing: .22em;
+	text-transform: uppercase;
+	text-align: center;
+	color: rgba(255, 249, 238, .92);
+	text-shadow: 0 1px 3px rgba(0, 0, 0, .85), 0 0 10px rgba(0, 0, 0, .5);
+	transition: opacity .4s ease;
+	pointer-events: none;
+}
+.doi-portal.is-active .doi-portal-tag {
+	opacity: 0;
+}
+@media (max-width: 767px) {
+	.doi-portal-tag {
+		font-size: 9px;
+		letter-spacing: .16em;
+	}
+}
+
+/* side doors step back into the shade; closed ones a little further. Every door state lists the same filters with
+   the rim's colour always written as a mix, so a door turning in or out fades smoothly (mismatched lists make
+   Chrome flash wrong colours) */
+.doi-portal-door,
+.doi-portal.is-side .doi-portal-door {
+	filter: brightness(.74) saturate(.88) contrast(1) drop-shadow(0 0 14px color-mix(in srgb, var(--glow) 0%, transparent));
+}
+.doi-portal.is-side.is-soon .doi-portal-door {
+	filter: brightness(.5) saturate(.7) contrast(1.06) drop-shadow(0 0 14px color-mix(in srgb, var(--glow) 0%, transparent));
+}
+.doi-portal.is-side:hover .doi-portal-door {
+	transform: translateY(-4px);
+}
+
+/* the active door: largest, and glowing in its own colour. The glow is a richer version of that colour, lifted to
+   a middle lightness so the dark doors read as coloured light rather than shadow (the ivory one turns gold, or it
+   would vanish into the page): a halo standing behind the middle of the ring, which portals.js gives the active
+   door's colour and which fades from one colour to the next as the ring turns, and a rim of the same light round
+   the door itself. Open ones also show light through the seam */
+@property --doi-halo {
+	syntax: '<color>';
+	inherits: false;
+	initial-value: #e0ac5c;
+}
+.doi-portals {
+	--ring-pc: #e8c98f;
+}
+.doi-portal {
+	--glow: var(--pc, #e8c98f);
+}
+.doi-portals-track::before {
+	--doi-halo: var(--ring-pc);
+	content: "";
+	position: absolute;
+	left: 50%;
+	bottom: calc(14px + var(--door-w) * 1.04);
+	z-index: 0;
+	width: calc(var(--door-w) * 2.2);
+	height: calc(var(--door-w) * 2.8);
+	border-radius: 50%;
+	background: radial-gradient(closest-side, color-mix(in srgb, var(--doi-halo) 46%, transparent) 0%, color-mix(in srgb, var(--doi-halo) 32%, transparent) 45%, color-mix(in srgb, var(--doi-halo) 12%, transparent) 75%, transparent 100%);
+	transform: translate(-50%, 50%);
+	transition: --doi-halo .7s ease;
+	animation: doi-portals-halo 3.6s ease-in-out infinite;
+	pointer-events: none;
+}
+@supports (color: oklch(from red clamp(.5, l, .8) min(calc(c * 2), .2) h)) {
+	.doi-portal {
+		--glow: oklch(from var(--pc, #e8c98f) clamp(.62, l, .82) min(calc(c * 1.6 + .02), .12) h);
+	}
+	.doi-portals-track::before {
+		--doi-halo: oklch(from var(--ring-pc) clamp(.62, l, .82) min(calc(c * 1.6 + .02), .12) h);
+	}
+}
+.doi-portal.is-light {
+	--glow: #e6bd7c;
+}
+.doi-portals.is-ring-light .doi-portals-track::before {
+	--doi-halo: #e6bd7c;
+}
+@keyframes doi-portals-halo {
+	0%, 100% { transform: translate(-50%, 50%) scale(.94); opacity: .82; }
+	50% { transform: translate(-50%, 50%) scale(1.05); opacity: 1; }
+}
+/* the rim stays still (only the halo breathes): animating a shadow's colour makes Chrome flash red and brown */
+.doi-portal.is-active.is-soon .doi-portal-door {
+	filter: brightness(.9) saturate(.94) contrast(1) drop-shadow(0 0 14px color-mix(in srgb, var(--glow) 45%, transparent));
+}
+.doi-portal.is-active:is(.is-interest, .is-released) .doi-portal-door {
+	filter: brightness(1) saturate(1) contrast(1) drop-shadow(0 0 14px color-mix(in srgb, var(--glow) 50%, transparent));
+}
+.doi-portal.is-active:is(.is-interest, .is-released):not(.is-entering) .doi-portal-seam {
+	opacity: 1;
+	animation: doi-portal-seam 2.8s ease-in-out infinite;
+}
+@keyframes doi-portal-seam {
+	0%, 100% { opacity: .7; }
+	50% { opacity: 1; }
+}
+
+/* Released: the portal already stands ajar, light spilling through */
+.doi-portal.is-released .doi-portal-leaf.is-left {
+	transform: rotateY(-24deg);
+}
+.doi-portal.is-released .doi-portal-leaf.is-right {
+	transform: rotateY(24deg);
+}
+/* hovering the active door opens it a crack (not once it is clicked: the pointer is still over it, and this would
+   otherwise hold the leaves at the crack instead of letting them swing open) */
+.doi-portal.is-active.is-interest:not(.is-entering):hover .doi-portal-leaf.is-left {
+	transform: rotateY(-12deg);
+}
+.doi-portal.is-active.is-interest:not(.is-entering):hover .doi-portal-leaf.is-right {
+	transform: rotateY(12deg);
+}
+.doi-portal.is-active.is-released:not(.is-entering):hover .doi-portal-leaf.is-left {
+	transform: rotateY(-32deg);
+}
+.doi-portal.is-active.is-released:not(.is-entering):hover .doi-portal-leaf.is-right {
+	transform: rotateY(32deg);
+}
+/* a closed door shakes its head */
+.doi-portal.is-nudged .doi-portal-door {
+	animation: doi-portal-nudge .5s ease;
+}
+@keyframes doi-portal-nudge {
+	0%, 100% { transform: translateX(0); }
+	25% { transform: translateX(-5px); }
+	50% { transform: translateX(4px); }
+	75% { transform: translateX(-2px); }
+}
+
+/* clicked: the leaves swing all the way open (portals.js waits for this before the light fills the screen) while
+   the doorway behind them brightens */
+.doi-portal.is-entering .doi-portal-leaf {
+	transition-duration: .95s;
+	transition-timing-function: cubic-bezier(.45, .05, .25, 1);
+}
+.doi-portal.is-entering .doi-portal-light {
+	filter: brightness(1.18);
+	transition: filter .95s ease;
+}
+.doi-portal.is-active.is-entering .doi-portal-leaf.is-left {
+	transform: rotateY(-102deg);
+}
+.doi-portal.is-active.is-entering .doi-portal-leaf.is-right {
+	transform: rotateY(102deg);
+}
+
+/* under the ring: the active door's name and its button */
+.doi-portals-caption {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 20px;
+	margin-top: 14px;
+	text-align: center;
+}
+.doi-portals-caption > * {
+	transition: opacity .25s ease, transform .25s ease;
+}
+.doi-portals-caption.is-swapping > * {
+	opacity: 0;
+	transform: translateY(6px);
+}
+/* what the active door is: "The first journal", "Coming later" */
+.doi-portals-label {
+	margin: 0 0 -12px;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1.3;
+	letter-spacing: .26em;
+	padding-left: .26em;
+	text-transform: uppercase;
+	color: #9a8f7d;
+}
+.doi-portals-label:empty {
+	display: none;
+}
+.doi-portals-name {
+	margin: 0;
+	font-family: Cinzel, 'Playfair Display', Georgia, serif;
+	font-size: 21px;
+	font-weight: 500;
+	line-height: 1.2;
+	letter-spacing: .24em;
+	padding-left: .24em;
+	text-transform: uppercase;
+	color: #8a6a3f;
+}
+/* the short invitation of what lies behind the door, under its name */
+.doi-portals-desc {
+	max-width: 30em;
+	min-height: 2.9em;
+	margin: -8px 0 0;
+	font-family: 'Cormorant Garamond', Garamond, Georgia, serif;
+	font-size: 20px;
+	font-style: italic;
+	line-height: 1.45;
+	color: #5a4632;
+	text-wrap: balance;
+}
+.doi-portals-desc:empty {
+	display: none;
+}
+.doi-portals-cta {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	min-width: 230px;
+	padding: 15px 30px;
+	border-radius: 999px;
+	background: linear-gradient(180deg, #ad7c4a 0%, #8c5d33 55%, #74491f 100%);
+	color: #fff8ee !important;
+	font-family: 'Playfair Display', Georgia, serif;
+	font-size: 18px;
+	line-height: 1.2;
+	text-decoration: none !important;
+	box-shadow: 0 14px 28px -14px rgba(110, 70, 30, .8), inset 0 1px 0 rgba(255, 236, 200, .45);
+	transition: opacity .25s ease, transform .3s ease, box-shadow .3s ease, background .3s ease;
+}
+.doi-portals-cta svg {
+	width: 18px;
+	height: 18px;
+	flex: 0 0 auto;
+	transition: transform .3s ease;
+}
+.doi-portals-cta[href]:hover,
+.doi-portals-cta[href]:focus-visible {
+	transform: translateY(-2px);
+	box-shadow: 0 18px 32px -14px rgba(110, 70, 30, .85), inset 0 1px 0 rgba(255, 236, 200, .45);
+}
+.doi-portals-cta[href]:hover svg {
+	transform: translateX(3px);
+}
+/* a future portal's button: quieter, an outline that leads to the waitlist rather than through the door */
+.doi-portals-cta.is-waitlist {
+	background: transparent;
+	color: #74491f !important;
+	box-shadow: inset 0 0 0 1px #ad7c4a;
+}
+.doi-portals-cta.is-waitlist[href]:hover,
+.doi-portals-cta.is-waitlist[href]:focus-visible {
+	background: rgba(173, 124, 74, .08);
+	box-shadow: inset 0 0 0 1px #8c5d33;
+}
+.doi-portals-cta[aria-disabled="true"] {
+	background: #e3dbd0;
+	color: #7d7266 !important;
+	box-shadow: none;
+	cursor: default;
+}
+.doi-portals-cta[aria-disabled="true"] svg {
+	display: none;
+}
+
+/* arrows and one dot per door */
+.doi-portals-nav {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 18px;
+	margin-top: 26px;
+}
+.doi-portals-arrow {
+	width: 42px;
+	height: 42px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: #efe8de;
+	color: #5c4a37;
+	cursor: pointer;
+	box-shadow: 0 4px 12px -4px rgba(80, 56, 30, .35);
+	transition: background-color .3s ease, transform .2s ease;
+}
+.doi-portals-arrow:hover,
+.doi-portals-arrow:focus-visible {
+	background: #e4d8c6;
+	transform: scale(1.06);
+}
+.doi-portals-arrow svg {
+	width: 18px;
+	height: 18px;
+}
+.doi-portals-dots {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.doi-portals-dot {
+	width: 7px;
+	height: 7px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: #d9cfc2;
+	cursor: pointer;
+	transition: background-color .3s ease, transform .3s ease;
+}
+.doi-portals-dot[aria-current="true"] {
+	background: #b08d5a;
+	transform: scale(1.45);
+}
+
+@media (max-width: 767px) {
+	.doi-portals-caption {
+		gap: 16px;
+		margin-top: 10px;
+	}
+	.doi-portals-name {
+		font-size: 18px;
+	}
+	.doi-portals-desc {
+		max-width: 22em;
+		margin-top: -6px;
+		padding: 0 12px;
+		font-size: 18px;
+	}
+	.doi-portals-cta {
+		min-width: 0;
+		padding: 13px 26px;
+		font-size: 17px;
+	}
+	.doi-portals-nav {
+		gap: 12px;
+		margin-top: 22px;
+	}
+	.doi-portals-arrow {
+		width: 38px;
+		height: 38px;
+	}
+	.doi-portals-dots {
+		gap: 6px;
+	}
+	.doi-portals-dot {
+		width: 6px;
+		height: 6px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.doi-portal,
+	.doi-portal-door,
+	.doi-portal-leaf,
+	.doi-portals-caption > * {
+		transition-duration: .01s;
+	}
+	.doi-portal.is-active .doi-portal-door,
+	.doi-portal.is-active .doi-portal-seam,
+	.doi-portals-track::before {
+		animation: none;
+	}
+}
+
+/* The shared waitlist form (the homepage's #waitlist section, see portals.js): its confirmation, with the chosen
+   portal filled in, appears only after signing up, in place of the form's own success message */
+.drumi-wl-confirm-on .drumi-wl-confirm:not(.is-shown),
+.drumi-wl-confirm-on #waitlist .elementor-message-success {
+	display: none;
+}
+.drumi-wl-confirm.is-shown {
+	animation: drumi-wl-in .5s ease both;
+}
+@keyframes drumi-wl-in {
+	from { opacity: 0; transform: translateY(6px); }
+	to { opacity: 1; transform: none; }
+}
