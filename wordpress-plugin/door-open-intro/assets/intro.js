@@ -374,7 +374,7 @@
 		cta.style.left = fx + 'px';
 		cta.style.top = oy + CFG.cta.y * c + 'px';
 		cta.style.fontSize = Math.max(11, Math.min(16, CFG.cta.size * c)) + 'px';
-		if (caption) caption.style.fontSize = Math.max(19, 19 * c) + 'px';
+		if (caption) caption.style.fontSize = Math.max(20, 20 * c) + 'px';
 
 		measurePage();
 		buildParticles();

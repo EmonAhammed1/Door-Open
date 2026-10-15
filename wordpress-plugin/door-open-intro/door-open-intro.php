@@ -13,7 +13,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DOI_VERSION', '4.7.2' );
+define( 'DOI_VERSION', '4.7.3' );
 define( 'DOI_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DOI_URL', plugin_dir_url( __FILE__ ) );
 define( 'DOI_OPTION', 'doi_intro' );

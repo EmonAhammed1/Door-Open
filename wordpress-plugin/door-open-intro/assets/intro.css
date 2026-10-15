@@ -141,11 +141,13 @@
 #doi-root .doi-btn,
 #doi-root .doi-btn svg { transition: background-color .25s ease, transform .25s ease, box-shadow .25s ease; }
 #doi-root .doi-btn:hover svg { transform: translateX(3px); }
+/* the line under the button: the soft, engraved italic of the door's old tagline (the client's wish, 15 Oct),
+   a shade darker so it still reads over the sunlit lower door */
 #doi-root .doi-caption {
-	margin: 1.1em 0 0; font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 700; font-style: normal;
-	line-height: 1.35; letter-spacing: .04em; text-transform: none; text-align: center; white-space: nowrap;
-	color: #3a2716;
-	text-shadow: 0 1px 0 rgba(255,255,255,.7), 0 0 10px rgba(255,255,255,.85), 0 0 22px rgba(255,255,255,.6);
+	margin: 1em 0 0; font-family: 'Cormorant Garamond', Garamond, Georgia, serif; font-weight: 400; font-style: italic;
+	line-height: 1.35; letter-spacing: .01em; text-transform: none; text-align: center; white-space: nowrap;
+	color: #5a3d21;
+	text-shadow: 0 1px 0 rgba(255,250,236,.8), 0 0 16px rgba(255,244,222,.65);
 }
 
 #doi-root .doi-skip,
