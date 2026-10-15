@@ -158,7 +158,17 @@
 	btnLabel.textContent = SETTINGS.button || 'Enter';
 	if (SETTINGS.buttonBg) btn.style.setProperty('--doi-btn-bg', SETTINGS.buttonBg);
 	let caption = null;
-	if (SETTINGS.caption) { caption = el('p', 'doi-caption', cta); caption.textContent = SETTINGS.caption; }
+	if (SETTINGS.caption) {
+		caption = el('p', 'doi-caption', cta);
+		caption.textContent = SETTINGS.caption;
+		if (SETTINGS.captionColor) caption.style.setProperty('--doi-caption-color', SETTINGS.captionColor);
+	}
+	// its size on phones / tablets / computers, set in the settings (Elementor's breakpoints)
+	function captionSize(vw) {
+		const S = SETTINGS.captionSize || {};
+		const px = +(vw <= 767 ? S.mobile : vw <= 1024 ? S.tablet : S.desktop);
+		return px > 0 ? px : 20;
+	}
 
 	let skipBtn = null;
 	if (SETTINGS.skip) {
@@ -374,7 +384,7 @@
 		cta.style.left = fx + 'px';
 		cta.style.top = oy + CFG.cta.y * c + 'px';
 		cta.style.fontSize = Math.max(11, Math.min(16, CFG.cta.size * c)) + 'px';
-		if (caption) caption.style.fontSize = Math.max(20, 20 * c) + 'px';
+		if (caption) caption.style.fontSize = captionSize(vw) + 'px';
 
 		measurePage();
 		buildParticles();

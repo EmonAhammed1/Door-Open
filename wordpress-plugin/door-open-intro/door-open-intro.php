@@ -13,7 +13,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DOI_VERSION', '4.7.4' );
+define( 'DOI_VERSION', '4.7.5' );
 define( 'DOI_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DOI_URL', plugin_dir_url( __FILE__ ) );
 define( 'DOI_OPTION', 'doi_intro' );
@@ -35,6 +35,10 @@ function doi_defaults() {
 		'button'    => 'OPEN THE DOOR',
 		'caption'   => 'Ready to come back home?',
 		'button_bg' => '#4b2a18',
+		'caption_color'        => '#5a3d21',
+		'caption_size_desktop' => 22, // px, per device (Elementor's breakpoints: phones ≤ 767, tablets ≤ 1024)
+		'caption_size_tablet'  => 20,
+		'caption_size_mobile'  => 20,
 		'hero'       => 1,
 		'hero_title' => 'Welcome Home',
 		'hero_sub'   => 'A place where you belong',
@@ -136,6 +140,12 @@ function doi_client_config() {
 		'button'    => (string) $s['button'],
 		'buttonBg'  => (string) $s['button_bg'],
 		'caption'   => (string) $s['caption'],
+		'captionColor' => (string) $s['caption_color'],
+		'captionSize'  => array(
+			'desktop' => (int) $s['caption_size_desktop'],
+			'tablet'  => (int) $s['caption_size_tablet'],
+			'mobile'  => (int) $s['caption_size_mobile'],
+		),
 		'skip'      => (bool) $s['skip'],
 		'skipLabel' => __( 'Skip intro', 'door-open-intro' ),
 		'once'        => (bool) $s['once'],

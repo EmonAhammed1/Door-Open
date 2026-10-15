@@ -21,7 +21,7 @@ into your page, which has already loaded behind the door the whole time.
 | Repeat visits | "Same tab": once per tab (a new tab shows it again). "Across all tabs": once until the visitor closes their browser, in every tab (a session cookie, `doi_seen`). |
 | Phones | Show the door on phones too. |
 | Skip | A small "Skip intro" link. Esc always skips. |
-| Text on the door | The name, tagline, button and the line under the button. |
+| Text on the door | The name, tagline, button and the line under the button, with the button colour and the colour and size (computers, tablets, phones) of the line under it. |
 
 `?doi_preview=1` on any page shows the door even if it's switched off or was already seen this visit.
 

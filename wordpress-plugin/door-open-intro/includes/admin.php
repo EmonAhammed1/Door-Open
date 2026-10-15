@@ -56,12 +56,22 @@ function doi_sanitize( $in ) {
 		'button'   => '' !== $button ? $button : $d['button'],
 		'caption'  => isset( $in['caption'] ) ? sanitize_text_field( $in['caption'] ) : $d['caption'],
 		'button_bg' => ( isset( $in['button_bg'] ) && sanitize_hex_color( $in['button_bg'] ) ) ? sanitize_hex_color( $in['button_bg'] ) : $d['button_bg'],
+		'caption_color'        => ( isset( $in['caption_color'] ) && sanitize_hex_color( $in['caption_color'] ) ) ? sanitize_hex_color( $in['caption_color'] ) : $d['caption_color'],
+		'caption_size_desktop' => doi_sanitize_px( isset( $in['caption_size_desktop'] ) ? $in['caption_size_desktop'] : '', $d['caption_size_desktop'] ),
+		'caption_size_tablet'  => doi_sanitize_px( isset( $in['caption_size_tablet'] ) ? $in['caption_size_tablet'] : '', $d['caption_size_tablet'] ),
+		'caption_size_mobile'  => doi_sanitize_px( isset( $in['caption_size_mobile'] ) ? $in['caption_size_mobile'] : '', $d['caption_size_mobile'] ),
 		'hero'       => empty( $in['hero'] ) ? 0 : 1,
 		'hero_title' => isset( $in['hero_title'] ) ? sanitize_text_field( $in['hero_title'] ) : $d['hero_title'],
 		'hero_sub'   => isset( $in['hero_sub'] ) ? sanitize_text_field( $in['hero_sub'] ) : $d['hero_sub'],
 		'hero_desktop' => doi_sanitize_hero_video( isset( $in['hero_desktop'] ) ? $in['hero_desktop'] : '', 'desktop' ),
 		'hero_mobile'  => doi_sanitize_hero_video( isset( $in['hero_mobile'] ) ? $in['hero_mobile'] : '', 'mobile' ),
 	);
+}
+
+/** A text size in px, kept between 10 and 80; empty or 0 falls back to the default. */
+function doi_sanitize_px( $value, $fallback ) {
+	$px = absint( $value );
+	return $px ? min( 80, max( 10, $px ) ) : $fallback;
 }
 
 /**
@@ -125,6 +135,7 @@ function doi_render_settings_page() {
 			.doi-admin .doi-hero p{margin:0 0 8px;max-width:56ch;color:#50575e}
 			.doi-admin .form-table th{width:220px}
 			.doi-admin textarea{width:100%;max-width:420px}
+			.doi-admin .doi-sizes label{display:inline-block;margin:0 22px 6px 0}
 			@media (max-width:640px){.doi-admin .doi-hero{flex-direction:column;align-items:flex-start}}
 			.doi-admin .doi-video{display:flex;gap:16px;align-items:flex-start;max-width:680px}
 			.doi-admin .doi-video-thumb{width:160px;height:auto;border-radius:4px;box-shadow:0 2px 10px rgba(0,0,0,.12);flex:none;background:#efe6d8}
@@ -231,6 +242,28 @@ function doi_render_settings_page() {
 				<tr>
 					<th scope="row"><label for="doi-caption"><?php esc_html_e( 'Under the button', 'door-open-intro' ); ?></label></th>
 					<td><input type="text" class="regular-text" id="doi-caption" name="<?php echo esc_attr( $name ); ?>[caption]" value="<?php echo esc_attr( $s['caption'] ); ?>"></td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="doi-caption-color"><?php esc_html_e( 'Colour of the line under the button', 'door-open-intro' ); ?></label></th>
+					<td><input type="color" id="doi-caption-color" name="<?php echo esc_attr( $name ); ?>[caption_color]" value="<?php echo esc_attr( $s['caption_color'] ); ?>"></td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Size of the line under the button', 'door-open-intro' ); ?></th>
+					<td>
+						<fieldset class="doi-sizes">
+							<?php
+							$sizes = array(
+								'desktop' => __( 'Computers', 'door-open-intro' ),
+								'tablet'  => __( 'Tablets', 'door-open-intro' ),
+								'mobile'  => __( 'Phones', 'door-open-intro' ),
+							);
+							foreach ( $sizes as $device => $label ) :
+								?>
+							<label><?php echo esc_html( $label ); ?><br><input type="number" class="small-text" min="10" max="80" step="1" name="<?php echo esc_attr( $name ); ?>[caption_size_<?php echo esc_attr( $device ); ?>]" value="<?php echo esc_attr( $s[ 'caption_size_' . $device ] ); ?>"> px</label>
+							<?php endforeach; ?>
+						</fieldset>
+						<p class="description"><?php esc_html_e( 'Text size in pixels on each kind of screen: phones up to 767px wide, tablets up to 1024px, computers above that.', 'door-open-intro' ); ?></p>
+					</td>
 				</tr>
 				<tr>
 					<th scope="row"><label for="doi-button-bg"><?php esc_html_e( 'Button colour', 'door-open-intro' ); ?></label></th>
