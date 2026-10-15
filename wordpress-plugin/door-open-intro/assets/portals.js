@@ -1,7 +1,8 @@
 /* DRUMI portals: a ring of doors that turns. The active door stands in the middle; its name and button sit under
    the ring and change with it. Turn it with the arrows, the dots, a swipe or drag, the keyboard arrows, or by
    clicking a side door. Clicking the active door (or its button) swings it open and the golden iris carries the
-   visitor through. The ring has no ends: after the last journey comes the first again. */
+   visitor through; a future portal stays closed and its button opens the waitlist with that portal chosen. The ring
+   has no ends: after the last journey comes the first again. */
 (function (d, w) {
 	var reduced = w.matchMedia && w.matchMedia('(prefers-reduced-motion: reduce)').matches;
 	var OPEN_MS = 950; // the leaves swing all the way open (matches .is-entering in portals.css)…
@@ -38,14 +39,82 @@
 		}, OPEN_MS + IRIS_MS);
 	}
 
+	// The waitlist is one shared form (the homepage's #waitlist section) with a "Portal" field. A future portal's
+	// button, or the finder's result, sends this event: the form gets that portal chosen, every .drumi-wl-portal names
+	// it, and the page scrolls to the form. After signing up, .drumi-wl-confirm appears with {portal} filled in.
+	function joinWaitlist(name, href) {
+		w.dispatchEvent(new CustomEvent('drumi:waitlist', { detail: { portal: name, href: href } }));
+	}
+
+	function waitlist() {
+		var field = d.querySelector('select[name="form_fields[portal]"]');
+		var names = d.querySelectorAll('.drumi-wl-portal');
+		var confirm = d.querySelector('.drumi-wl-confirm');
+		var chosen = field ? field.value : '';
+		// the confirmation's own words, kept so {portal} can be filled in again for a second sign-up
+		var texts = [];
+		if (confirm) {
+			var walker = d.createTreeWalker(confirm, NodeFilter.SHOW_TEXT);
+			var node;
+			while ((node = walker.nextNode())) texts.push([node, node.nodeValue]);
+		}
+		function choose(name) {
+			if (field && name) {
+				var known = Array.prototype.some.call(field.options, function (o) { return o.value === name; });
+				if (known) field.value = name;
+			}
+			chosen = field ? field.value : name || chosen;
+			Array.prototype.forEach.call(names, function (n) { n.textContent = chosen; });
+			if (confirm) confirm.classList.remove('is-shown');
+		}
+		if (field) {
+			d.documentElement.classList.add('drumi-wl-on');
+			if (confirm) d.documentElement.classList.add('drumi-wl-confirm-on');
+			field.addEventListener('change', function () { choose(field.value); });
+			choose(field.value);
+			// Elementor empties the form after a sign-up: remember which portal it was for
+			field.form.addEventListener('submit', function () { chosen = field.value; }, true);
+			if (w.jQuery) {
+				w.jQuery(field.form).on('submit_success', function () {
+					var name = chosen;
+					w.setTimeout(function () { choose(name); if (confirm) confirm.classList.add('is-shown'); }, 0);
+					texts.forEach(function (t) { t[0].nodeValue = t[1].split('{portal}').join(name); });
+				});
+			}
+		}
+		w.addEventListener('drumi:waitlist', function (e) {
+			var detail = e.detail || {};
+			choose(detail.portal);
+			var href = detail.href || '#waitlist';
+			var id = href.indexOf('#') >= 0 ? href.slice(href.indexOf('#') + 1) : '';
+			var target = id && d.getElementById(id);
+			if (!target) {
+				w.location.href = href;
+				return;
+			}
+			target.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+			if (w.history.replaceState) w.history.replaceState(null, '', '#' + id);
+		});
+		// any other link to the waitlist can choose its entry too: give it the attribute data-portal="…" in Elementor
+		// (Link > Custom attributes), e.g. "Explore DRUMI for professionals"
+		d.addEventListener('click', function (e) {
+			var a = e.target.closest && e.target.closest('a[data-portal]');
+			if (!a || plainClick(e)) return;
+			e.preventDefault();
+			joinWaitlist(a.getAttribute('data-portal'), a.getAttribute('href'));
+		});
+	}
+
 	function setup(root) {
 		var track = root.querySelector('.doi-portals-track');
 		var portals = Array.prototype.slice.call(root.querySelectorAll('.doi-portal'));
 		var N = portals.length;
 		if (!track || !N) return;
 		var captionEl = root.querySelector('.doi-portals-caption');
+		var labelEl = root.querySelector('.doi-portals-label');
 		var nameEl = root.querySelector('.doi-portals-name');
 		var descEl = root.querySelector('.doi-portals-desc');
+		var waitUrl = root.getAttribute('data-waitlist-url') || '';
 		var cta = root.querySelector('.doi-portals-cta');
 		var ctaText = root.querySelector('.doi-portals-cta-text');
 		var dots = Array.prototype.slice.call(root.querySelectorAll('.doi-portals-dot'));
@@ -117,11 +186,15 @@
 			tint(el);
 			var name = el.getAttribute('data-name');
 			var text = el.getAttribute('data-cta');
-			var href = el.getAttribute('data-href');
+			var wait = isWaitlist(el);
+			// a future portal's button leads to the waitlist instead of through the door
+			var href = wait ? waitUrl : el.getAttribute('data-href');
 			function apply() {
+				if (labelEl) labelEl.textContent = el.getAttribute('data-label') || '';
 				nameEl.textContent = name;
 				if (descEl) descEl.textContent = el.getAttribute('data-desc') || '';
 				ctaText.textContent = text;
+				cta.classList.toggle('is-waitlist', wait);
 				if (href) {
 					cta.setAttribute('href', href);
 					cta.removeAttribute('aria-disabled');
@@ -156,6 +229,10 @@
 			if (changed) caption(true);
 		}
 
+		function isWaitlist(el) {
+			return el.getAttribute('data-waitlist') === '1' && !!waitUrl;
+		}
+
 		function nudge(el) {
 			el.classList.remove('is-nudged');
 			void el.offsetWidth;
@@ -173,6 +250,12 @@
 				if (Math.abs(rel(i)) >= 0.5) {
 					e.preventDefault();
 					turnTo(i);
+					return;
+				}
+				// a future portal stays closed: clicking it opens its waitlist
+				if (isWaitlist(el)) {
+					e.preventDefault();
+					joinWaitlist(el.getAttribute('data-name'), waitUrl);
 					return;
 				}
 				var href = el.getAttribute('data-href');
@@ -204,6 +287,11 @@
 			if (!href) {
 				e.preventDefault();
 				nudge(el);
+				return;
+			}
+			if (isWaitlist(el)) {
+				e.preventDefault();
+				joinWaitlist(el.getAttribute('data-name'), href);
 				return;
 			}
 			if (plainClick(e)) return;
@@ -286,6 +374,7 @@
 	}
 
 	ready(function () {
+		waitlist();
 		Array.prototype.forEach.call(d.querySelectorAll('.doi-portals'), setup);
 	});
 })(document, window);

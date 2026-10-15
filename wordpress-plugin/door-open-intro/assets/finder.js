@@ -1,6 +1,7 @@
-/* DRUMI portal finder: a few questions in a dialog that suggest the portal that speaks to the visitor right now,
-   say why, and offer the next step. Any link to #find-your-portal opens it. Text and questions come from
-   includes/home.php (window.DOI_FINDER). */
+/* DRUMI portal finder: a few questions in a dialog that suggest the theme (portal) that speaks to the visitor right
+   now, say why, and offer the next step: the journal for Awakening, or the waitlist (with that portal chosen) for a
+   future one. Any link to #find-your-portal opens it. Text and questions come from includes/home.php
+   (window.DOI_FINDER). */
 (function (d, w) {
 	var cfg = w.DOI_FINDER;
 	if (!cfg) return;
@@ -108,6 +109,17 @@
 			return a;
 		}
 
+		// the shared waitlist form, with this portal chosen (portals.js listens for the event and scrolls there)
+		function join(portal) {
+			var a = link('doi-finder-cta', T.join, cfg.waitlist);
+			a.addEventListener('click', function (e) {
+				e.preventDefault();
+				dialog.close();
+				w.dispatchEvent(new CustomEvent('drumi:waitlist', { detail: { portal: portal, href: cfg.waitlist } }));
+			});
+			return a;
+		}
+
 		function result() {
 			var p = cfg.portals[score()];
 			swap(function () {
@@ -119,6 +131,7 @@
 				name.id = 'doi-finder-title';
 				name.tabIndex = -1;
 				res.appendChild(name);
+				if (p.label) res.appendChild(el('p', 'doi-finder-status', p.label));
 				if (p.desc) res.appendChild(el('p', 'doi-finder-desc', p.desc));
 
 				var why = el('div', 'doi-finder-why');
@@ -135,8 +148,13 @@
 				res.appendChild(why);
 
 				var next = el('div', 'doi-finder-next');
-				next.appendChild(p.url ? link('doi-finder-cta', fill(T.explore, p.name), p.url) : link('doi-finder-cta', T.journal, cfg.journal));
-				next.appendChild(link('doi-finder-cta is-quiet', T.waitlist, cfg.waitlist));
+				if (p.later) {
+					// a future journal: its waitlist with this portal chosen, nothing to buy; Awakening stays the way to begin
+					next.appendChild(join(p.name));
+					if (cfg.first) next.appendChild(link('doi-finder-cta is-quiet', fill(T.begin, cfg.first.name), cfg.first.url));
+				} else {
+					next.appendChild(link('doi-finder-cta', T.journal, p.url || cfg.journal));
+				}
 				res.appendChild(next);
 
 				var again = el('button', 'doi-finder-back', T.again);

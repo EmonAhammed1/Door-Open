@@ -13,7 +13,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DOI_VERSION', '4.7.0' );
+define( 'DOI_VERSION', '4.7.2' );
 define( 'DOI_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DOI_URL', plugin_dir_url( __FILE__ ) );
 define( 'DOI_OPTION', 'doi_intro' );
@@ -26,7 +26,7 @@ function doi_defaults() {
 	return array(
 		'enabled'  => 1,
 		'where'    => 'home', // 'home' | 'all'
-		'once'     => 0, // once per tab (sessionStorage)
+		'once'     => 0, // once per tab (sessionStorage); arriving from outside and reloading still show it
 		'once_all' => 0, // once per browser session, across all tabs (session cookie)
 		'mobile'   => 1,
 		'skip'     => 1,
@@ -313,6 +313,13 @@ function doi_print_journey_transition_cover() {
  * Runs in <head>, before anything paints: decides whether this visit plays the door (once-per-visit and
  * phone settings are checked in the browser, so full-page caches stay correct), and hides the page
  * behind a still of the closed door until the intro script takes over.
+ *
+ * "Once per tab" means: arriving at the site (a fresh visit, a link from elsewhere, a typed address) and reloading
+ * always show the door; coming back to the homepage from inside the site in the same tab (a menu link, the back
+ * button) goes straight to the page, so the door does not stand in the way twice.
+ *
+ * If the intro script is not ready 6 s after the page's HTML has arrived, the page shows without the door, so a
+ * failed script can never trap the visitor; the clock starts only then, so a slow page still gets its door.
  */
 add_action( 'wp_head', 'doi_print_head', 1 );
 function doi_print_head() {
@@ -337,6 +344,14 @@ function doi_print_head() {
 <link rel="preload" as="image" href="<?php echo esc_url( doi_image_url( 'desktop-lit.jpg' ) ); ?>" media="(min-aspect-ratio: 3/4)">
 <link rel="preload" as="image" href="<?php echo esc_url( $phone ); ?>" media="(max-aspect-ratio: 3/4)">
 <link rel="preload" as="image" href="<?php echo esc_url( doi_image_url( 'phone-lit.jpg' ) ); ?>" media="(max-aspect-ratio: 3/4)">
+<?php
+	// the corridor's first frame, so it is already standing there the moment the door has opened
+	if ( doi_hero_enabled() ) :
+		$sets = doi_hero_sets();
+		?>
+<link rel="preload" as="image" href="<?php echo esc_url( doi_hero_poster( $sets['desktop'] ) ); ?>" media="(min-aspect-ratio: 3/4)">
+<link rel="preload" as="image" href="<?php echo esc_url( doi_hero_poster( $sets['mobile'] ) ); ?>" media="(max-aspect-ratio: 3/4)">
+<?php endif; ?>
 <style id="doi-critical">
 html.doi-on,html.doi-on body{overflow:hidden!important}
 html.doi-on:not(.doi-ready) body{visibility:hidden}
@@ -361,11 +376,14 @@ html.doi-on .doi-cover::after{background-size:calc(100vw * 941 / 760) auto}
 </style>
 <script id="doi-gate">
 (function(d,w,g){var h=d.documentElement;
-try{if(g.once&&!g.forced&&w.sessionStorage.getItem('doi_seen'))return}catch(e){}
+var nav='';try{nav=(w.performance.getEntriesByType('navigation')[0]||{}).type||''}catch(e){}
+var inside=d.referrer.indexOf(location.protocol+'//'+location.host+'/')===0;
+try{if(g.once&&!g.forced&&nav!=='reload'&&(nav==='back_forward'||inside)&&w.sessionStorage.getItem('doi_seen'))return}catch(e){}
 if(g.onceAll&&!g.forced&&/(?:^|;\s*)doi_seen=1(?:;|$)/.test(d.cookie))return;
 if(!g.mobile&&!g.forced&&w.matchMedia&&w.matchMedia('(max-width: 767px)').matches)return;
 h.classList.add('doi-on');
-w.setTimeout(function(){if(!h.classList.contains('doi-ready'))h.classList.remove('doi-on')},10000);
+var off=function(){if(!h.classList.contains('doi-ready'))h.classList.remove('doi-on')};
+d.addEventListener('DOMContentLoaded',function(){w.setTimeout(off,6000)});w.setTimeout(off,30000);
 })(document,window,<?php echo wp_json_encode( $gate ); ?>);
 </script>
 	<?php

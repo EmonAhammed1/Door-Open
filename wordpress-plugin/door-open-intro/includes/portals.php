@@ -50,20 +50,24 @@ function doi_portals_defaults() {
 			'desc'         => $j[2],
 			'design'       => substr( 'abcd', $i % 4, 1 ),
 			'stage'        => $i ? 'soon' : 'interest',
-			'interest_url' => $i ? '' : home_url( '/demo/' ),
+			'interest_url' => $i ? '' : home_url( '/awakening/' ),
 			'product_id'   => 0,
 			'windows'      => $i ? array() : array( array( 'start' => '2027-03-08T00:00', 'end' => '' ) ),
 			'button'       => '', // empty: the default button text below, with the journey's name
+			'label'        => $i ? '' : 'The first journal', // empty: the label of its stage below
 		);
 	}
 	return array(
-		'labels'         => array(
-			'soon'     => 'Coming Soon',
+		'labels'          => array(
+			'soon'     => 'Coming later',
 			'interest' => 'Explore',
 			'released' => 'Enter',
 		),
-		'feature'        => 0,
-		'feature_button' => 'Explore %s',
+		'feature'         => 0,
+		'feature_button'  => 'Explore %s',
+		// a future ("Coming soon") portal's button: it opens the waitlist with that portal already chosen
+		'waitlist_button' => 'Join waitlist',
+		'waitlist_url'    => '#waitlist',
 		'closed_text'    => 'Orders for this journal are closed right now.',
 		'next_text'      => 'The next ordering window opens on %s (Amsterdam time).',
 		'notify'         => '',
@@ -100,6 +104,20 @@ function doi_portal_url( $p ) {
 		return get_permalink( $p['product_id'] );
 	}
 	return (string) $p['interest_url'];
+}
+
+/** The Awakening page used to be at /demo/; old links and bookmarks still find it at /awakening/. */
+add_action( 'template_redirect', 'doi_portals_old_awakening_url' );
+function doi_portals_old_awakening_url() {
+	if ( ! is_404() ) {
+		return;
+	}
+	$path = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ), PHP_URL_PATH ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- only compared below.
+	$page = 'demo' === trim( $path, '/' ) ? get_page_by_path( 'awakening' ) : null;
+	if ( $page ) {
+		wp_safe_redirect( get_permalink( $page ), 301 );
+		exit;
+	}
 }
 
 function doi_portal_is_light( $hex ) {
@@ -220,48 +238,59 @@ function doi_portal_button_text( $cfg, $p ) {
 	return false !== strpos( $text, '%s' ) ? sprintf( $text, $p['name'] ) : $text;
 }
 
+/** A door's label (on it while it stands at the side, above its name while it is in the middle): its own, or its stage's. */
+function doi_portal_label( $cfg, $p, $stage ) {
+	return '' !== trim( (string) $p['label'] ) ? $p['label'] : $cfg['labels'][ $stage ];
+}
+
 add_shortcode( 'drumi_portals', 'doi_portals_shortcode' );
 function doi_portals_shortcode() {
 	doi_portals_enqueue();
 	$cfg   = doi_portals();
 	$n     = count( $cfg['items'] );
 	$start = isset( $cfg['items'][ $cfg['feature'] ] ) ? (int) $cfg['feature'] : 0;
-	$html  = '<div class="doi-portals" data-start="' . $start . '" role="region" aria-roledescription="carousel" aria-label="' . esc_attr__( 'The DRUMI journeys', 'door-open-intro' ) . '">'
+	$wait_url = (string) $cfg['waitlist_url'];
+	$html     = '<div class="doi-portals" data-start="' . $start . '" data-waitlist-url="' . esc_attr( $wait_url ) . '" role="region" aria-roledescription="carousel" aria-label="' . esc_attr__( 'The DRUMI journeys', 'door-open-intro' ) . '">'
 		. '<div class="doi-portals-track">';
-	$first = null;
+	$first    = null;
 	foreach ( $cfg['items'] as $i => $p ) {
 		$url = doi_portal_url( $p );
 		// a portal that is open but has nowhere to lead yet stays closed rather than becoming a dead link
 		$stage = '' === $url ? 'soon' : $p['stage'];
-		$cta   = 'soon' === $stage ? $cfg['labels']['soon'] : doi_portal_button_text( $cfg, $p );
+		// a future portal stays closed; its button opens the waitlist with this portal already chosen
+		$wait  = 'soon' === $stage && '' !== $wait_url;
+		$cta   = 'soon' === $stage ? ( $wait ? $cfg['waitlist_button'] : $cfg['labels']['soon'] ) : doi_portal_button_text( $cfg, $p );
+		$label = doi_portal_label( $cfg, $p, $stage );
 		// where the door stands when the page opens: 0 in the middle, then -1 / +1 beside it, and so on round the ring
 		$pos   = ( ( $i - $start ) % $n + $n ) % $n;
 		$pos   = $pos > $n / 2 ? $pos - $n : $pos;
 		$tex   = DOI_URL . 'assets/door/portal-' . $p['design'] . '.webp';
 		$class = 'doi-portal is-' . $stage . ( doi_portal_is_light( $p['color'] ) ? ' is-light' : '' ) . ( 0 === $pos ? ' is-active' : ' is-side' );
 		$attrs = ' class="' . esc_attr( $class ) . '" data-portal="' . (int) $i . '" data-pos="' . (int) $pos . '"'
-			. ' data-name="' . esc_attr( $p['name'] ) . '" data-desc="' . esc_attr( $p['desc'] ) . '" data-cta="' . esc_attr( $cta ) . '" data-href="' . esc_url( $url ) . '"'
-			. ' aria-label="' . esc_attr( $p['name'] . ' — ' . $cfg['labels'][ $stage ] ) . '"'
+			. ' data-name="' . esc_attr( $p['name'] ) . '" data-desc="' . esc_attr( $p['desc'] ) . '" data-label="' . esc_attr( $label ) . '" data-cta="' . esc_attr( $cta ) . '" data-href="' . esc_url( $url ) . '"'
+			. ( $wait ? ' data-waitlist="1"' : '' )
+			. ' aria-label="' . esc_attr( $p['name'] . ' — ' . $label ) . '"'
 			. ' style="' . esc_attr( '--pc:' . $p['color'] . ';--doi-tex:url(' . $tex . ')' ) . '"';
 		$inner = '<span class="doi-portal-door" aria-hidden="true"><span class="doi-portal-light"></span>'
 			. '<span class="doi-portal-leaf is-left"></span><span class="doi-portal-leaf is-right"></span>'
 			. '<span class="doi-portal-seam"></span>'
-			. '<span class="doi-portal-tag">' . esc_html( $cfg['labels'][ $stage ] ) . '</span></span>';
+			. '<span class="doi-portal-tag">' . esc_html( $label ) . '</span></span>';
 		$html .= 'soon' === $stage
 			? '<div' . $attrs . '>' . $inner . '</div>'
 			: '<a' . $attrs . ' href="' . esc_url( $url ) . '">' . $inner . '</a>';
 		if ( $i === $start ) {
-			$first = array( $p['name'], $cta, $url, $p['desc'] );
+			$first = array( $p['name'], $cta, $wait ? $wait_url : $url, $p['desc'], $label, $wait );
 		}
 	}
 	$html .= '</div>';
 
-	// the active door's name and button; portals.js swaps them as the ring turns
+	// the active door's label, name and button; portals.js swaps them as the ring turns
 	$arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="%s"/></svg>';
 	$html .= '<div class="doi-portals-caption" aria-live="polite">'
+		. '<p class="doi-portals-label">' . esc_html( $first[4] ) . '</p>'
 		. '<p class="doi-portals-name">' . esc_html( $first[0] ) . '</p>'
 		. '<p class="doi-portals-desc">' . esc_html( $first[3] ) . '</p>'
-		. '<a class="doi-portals-cta"' . ( '' !== $first[2] ? ' href="' . esc_url( $first[2] ) . '"' : ' aria-disabled="true"' ) . '>'
+		. '<a class="doi-portals-cta' . ( $first[5] ? ' is-waitlist' : '' ) . '"' . ( '' !== $first[2] ? ' href="' . esc_url( $first[2] ) . '"' : ' aria-disabled="true"' ) . '>'
 		. '<span class="doi-portals-cta-text">' . esc_html( $first[1] ) . '</span>' . sprintf( $arrow, 'M5 12h14M13 6l6 6-6 6' ) . '</a>'
 		. '</div>';
 
@@ -301,6 +330,8 @@ function doi_portals_sanitize( $in ) {
 		'labels'         => array(),
 		'feature'        => isset( $in['feature'] ) ? max( 0, min( count( $d['items'] ) - 1, (int) $in['feature'] ) ) : 0,
 		'feature_button' => $text( 'feature_button', $d['feature_button'] ),
+		'waitlist_button' => $text( 'waitlist_button', $d['waitlist_button'] ),
+		'waitlist_url'   => isset( $in['waitlist_url'] ) && '' !== trim( $in['waitlist_url'] ) ? esc_url_raw( trim( $in['waitlist_url'] ) ) : $d['waitlist_url'],
 		'closed_text'    => $text( 'closed_text', $d['closed_text'] ),
 		'next_text'      => $text( 'next_text', $d['next_text'] ),
 		'notify'         => isset( $in['notify'] ) ? sanitize_text_field( $in['notify'] ) : '',
@@ -323,6 +354,7 @@ function doi_portals_sanitize( $in ) {
 			'product_id'   => ( $pid && 'product' === get_post_type( $pid ) ) ? $pid : 0,
 			'windows'      => array(),
 			'button'       => isset( $r['button'] ) ? sanitize_text_field( $r['button'] ) : '',
+			'label'        => isset( $r['label'] ) ? sanitize_text_field( $r['label'] ) : '',
 		);
 		foreach ( isset( $r['windows'] ) && is_array( $r['windows'] ) ? $r['windows'] : array() as $win ) {
 			$start = isset( $win['start'] ) ? substr( trim( $win['start'] ), 0, 16 ) : '';
@@ -358,7 +390,7 @@ function doi_portals_sanitize( $in ) {
 /** One line under each portal in the admin saying what visitors get right now. */
 function doi_portal_admin_status( $p ) {
 	if ( 'soon' === $p['stage'] ) {
-		return __( 'Shown dark with “Coming soon”. Not clickable.', 'door-open-intro' );
+		return __( 'Shown dark with “Coming later”. Its button opens the waitlist for this portal.', 'door-open-intro' );
 	}
 	$url = doi_portal_url( $p );
 	if ( '' === $url ) {
@@ -401,7 +433,7 @@ function doi_portals_page() {
 		<h1><?php esc_html_e( 'DRUMI Portals', 'door-open-intro' ); ?></h1>
 		<p class="doi-lead"><?php esc_html_e( 'The thirteen journeys on the homepage. Change a portal’s stage whenever you decide to: waitlist sign-ups never change it by themselves.', 'door-open-intro' ); ?></p>
 		<ol class="doi-stage-help">
-			<li><strong><?php echo esc_html( $stages['soon'] ); ?></strong> — <?php esc_html_e( 'dark and closed, nothing to click.', 'door-open-intro' ); ?></li>
+			<li><strong><?php echo esc_html( $stages['soon'] ); ?></strong> — <?php esc_html_e( 'dark and closed; its button opens the waitlist with this portal chosen.', 'door-open-intro' ); ?></li>
 			<li><strong><?php echo esc_html( $stages['interest'] ); ?></strong> — <?php esc_html_e( 'lit and clickable; leads to the journey’s own page with its own waitlist form. Nothing can be bought.', 'door-open-intro' ); ?></li>
 			<li><strong><?php echo esc_html( $stages['released'] ); ?></strong> — <?php esc_html_e( 'stands ajar and leads to its product. The product can be bought only inside an ordering window below; outside them the page stays open with checkout closed.', 'door-open-intro' ); ?></li>
 		</ol>
@@ -482,7 +514,12 @@ function doi_portals_page() {
 
 					<label class="doi-pa-field"><?php esc_html_e( 'Button text under this door when it is in the middle', 'door-open-intro' ); ?>
 						<input type="text" name="<?php echo esc_attr( $f ); ?>[button]" value="<?php echo esc_attr( $p['button'] ); ?>" placeholder="<?php echo esc_attr( doi_portal_button_text( $cfg, array_merge( $p, array( 'button' => '' ) ) ) ); ?>">
-						<span class="description"><?php esc_html_e( 'Leave empty for the default. The button leads where the door leads; while the door is “Coming soon” it shows “Coming Soon” and can’t be clicked.', 'door-open-intro' ); ?></span>
+						<span class="description"><?php esc_html_e( 'Leave empty for the default. The button leads where the door leads; while the door is “Coming soon” it shows the waitlist button below instead, which opens the waitlist with this portal already chosen.', 'door-open-intro' ); ?></span>
+					</label>
+
+					<label class="doi-pa-field"><?php esc_html_e( 'Label on this door (and above its name in the middle)', 'door-open-intro' ); ?>
+						<input type="text" name="<?php echo esc_attr( $f ); ?>[label]" value="<?php echo esc_attr( $p['label'] ); ?>" placeholder="<?php echo esc_attr( $cfg['labels'][ $p['stage'] ] ); ?>">
+						<span class="description"><?php esc_html_e( 'For example “The first journal”. Leave empty for the label of its stage.', 'door-open-intro' ); ?></span>
 					</label>
 				</section>
 			<?php endforeach; ?>
@@ -504,6 +541,14 @@ function doi_portals_page() {
 				<tr>
 					<th scope="row"><label for="doi-fb"><?php esc_html_e( 'Default button text', 'door-open-intro' ); ?></label></th>
 					<td><input id="doi-fb" class="regular-text" type="text" name="<?php echo esc_attr( $name ); ?>[feature_button]" value="<?php echo esc_attr( $cfg['feature_button'] ); ?>"><p class="description"><?php esc_html_e( '%s is replaced by the portal’s name.', 'door-open-intro' ); ?></p></td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="doi-wb"><?php esc_html_e( 'Button under a “Coming soon” portal', 'door-open-intro' ); ?></label></th>
+					<td>
+						<input id="doi-wb" class="regular-text" type="text" name="<?php echo esc_attr( $name ); ?>[waitlist_button]" value="<?php echo esc_attr( $cfg['waitlist_button'] ); ?>">
+						<input class="regular-text" type="text" name="<?php echo esc_attr( $name ); ?>[waitlist_url]" value="<?php echo esc_attr( $cfg['waitlist_url'] ); ?>" aria-label="<?php esc_attr_e( 'Waitlist link', 'door-open-intro' ); ?>">
+						<p class="description"><?php esc_html_e( 'It leads to the waitlist (#waitlist is the waitlist section on the homepage) and chooses that portal in the form’s “Portal” field.', 'door-open-intro' ); ?></p>
+					</td>
 				</tr>
 				<?php foreach ( $stages as $key => $label ) : ?>
 				<tr>

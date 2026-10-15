@@ -89,6 +89,8 @@
 			function fetchFrame(i) {
 				var img = new Image();
 				img.decoding = 'async';
+				// the ends of the walk first; the in-between frames never compete with the door's photographs
+				img.fetchPriority = i === 0 || i === N - 1 ? 'high' : 'low';
 				active++;
 				img.onload = function () {
 					active--;
@@ -190,13 +192,26 @@
 		w.addEventListener('scroll', onScroll, { passive: true });
 		w.addEventListener('resize', onResize);
 
-		// the door and its photographs are fetched first; the walk's frames follow once the page has loaded
+		// The door's photographs are fetched first; the walk's frames follow as soon as the door is showing (or is
+		// opened, or skipped), while the visitor is still looking at it. Waiting for the whole page to load left the
+		// corridor half-fetched, and seemingly frozen, right after the door opened on a slow connection.
 		function start() {
+			if (started) return;
 			started = true;
 			load();
 		}
-		if (d.readyState === 'complete') start();
-		else w.addEventListener('load', start, { once: true });
+		var html = d.documentElement;
+		if (!html.classList.contains('doi-on')) {
+			start();
+		} else {
+			w.addEventListener('doi:open', start, { once: true });
+			var wait = w.setInterval(function () {
+				if (html.classList.contains('doi-ready') || !html.classList.contains('doi-on')) {
+					w.clearInterval(wait);
+					start();
+				}
+			}, 150);
+		}
 		schedule();
 	});
 })(document, window);

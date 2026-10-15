@@ -332,6 +332,20 @@
 	opacity: 0;
 	transform: translateY(6px);
 }
+/* what the active door is: "The first journal", "Coming later" */
+.doi-portals-label {
+	margin: 0 0 -12px;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1.3;
+	letter-spacing: .26em;
+	padding-left: .26em;
+	text-transform: uppercase;
+	color: #9a8f7d;
+}
+.doi-portals-label:empty {
+	display: none;
+}
 .doi-portals-name {
 	margin: 0;
 	font-family: Cinzel, 'Playfair Display', Georgia, serif;
@@ -388,6 +402,17 @@
 }
 .doi-portals-cta[href]:hover svg {
 	transform: translateX(3px);
+}
+/* a future portal's button: quieter, an outline that leads to the waitlist rather than through the door */
+.doi-portals-cta.is-waitlist {
+	background: transparent;
+	color: #74491f !important;
+	box-shadow: inset 0 0 0 1px #ad7c4a;
+}
+.doi-portals-cta.is-waitlist[href]:hover,
+.doi-portals-cta.is-waitlist[href]:focus-visible {
+	background: rgba(173, 124, 74, .08);
+	box-shadow: inset 0 0 0 1px #8c5d33;
 }
 .doi-portals-cta[aria-disabled="true"] {
 	background: #e3dbd0;
@@ -500,4 +525,18 @@
 	.doi-portals-track::before {
 		animation: none;
 	}
+}
+
+/* The shared waitlist form (the homepage's #waitlist section, see portals.js): its confirmation, with the chosen
+   portal filled in, appears only after signing up, in place of the form's own success message */
+.drumi-wl-confirm-on .drumi-wl-confirm:not(.is-shown),
+.drumi-wl-confirm-on #waitlist .elementor-message-success {
+	display: none;
+}
+.drumi-wl-confirm.is-shown {
+	animation: drumi-wl-in .5s ease both;
+}
+@keyframes drumi-wl-in {
+	from { opacity: 0; transform: translateY(6px); }
+	to { opacity: 1; transform: none; }
 }

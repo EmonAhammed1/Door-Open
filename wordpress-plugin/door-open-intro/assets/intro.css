@@ -152,12 +152,13 @@
 #doi-root .doi-skip:hover,
 #doi-root .doi-skip:focus {
 	position: absolute; right: 18px; bottom: 16px; margin: 0; padding: 8px 12px; min-height: 0; width: auto; height: auto;
-	border: 0; border-radius: 999px; background: rgba(255,250,240,.28); color: #4c3d2d; cursor: pointer;
+	border: 1px solid rgba(76,61,45,.22); border-radius: 999px; background: rgba(255,250,240,.66); color: #3f3124; cursor: pointer;
+	-webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
 	font-family: 'Cinzel', 'Trajan Pro', Georgia, serif; font-size: 11px; font-weight: 500; line-height: 1.2;
 	letter-spacing: .2em; text-transform: uppercase; text-decoration: none; text-shadow: 0 1px 0 rgba(255,250,238,.7);
-	box-shadow: none; opacity: .7; outline: none;
+	box-shadow: 0 4px 14px rgba(60,40,20,.14); opacity: 1; outline: none;
 }
-#doi-root .doi-skip:hover { opacity: 1; background: rgba(255,250,240,.55); }
+#doi-root .doi-skip:hover { opacity: 1; background: rgba(255,250,240,.9); }
 #doi-root .doi-skip:focus-visible { opacity: 1; outline: 2px solid #9a7470; outline-offset: 2px; }
 
 /* the name, button and caption settle in over the still that was on screen while the page loaded */
@@ -171,12 +172,15 @@
 	#doi-root .doi-caption { animation: none; }
 }
 
-/* skip intro: the small, see-through pill from before (the client's wish); on phones it clears the home indicator */
+/* skip intro: the small, see-through pill from before (the client's wish), frosted enough to read over the door
+   (brief of 12 Oct: "visible, readable and functional"); on phones it is a little larger and clears the home indicator */
 @media (max-width: 767px) {
 	#doi-root .doi-skip,
 	#doi-root .doi-skip:hover,
 	#doi-root .doi-skip:focus {
 		bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+		padding: 10px 15px;
+		font-size: 12px;
 	}
 }
 

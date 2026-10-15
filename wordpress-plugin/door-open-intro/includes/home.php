@@ -1,13 +1,14 @@
 <?php
 /**
- * The portal finder for the homepage's "Not sure which door to open?" section (website 2.0).
+ * The portal finder for the homepage's "Which theme speaks to you?" section (website 2.0).
  *
  * The homepage sections themselves are built only from Elementor containers and widgets, with their layout, type,
  * colours and image fades set in Elementor, so everything about them can be changed there; see
  * scripts/build-home-website2.php in the repository for how they were first laid out.
  *
- * [drumi_portal_finder] prints the finder: a few questions in a dialog that suggest a matching portal, say why it
- * resonates and offer the next step. Any link to #find-your-portal opens it.
+ * [drumi_portal_finder] prints the finder: a few questions in a dialog that suggest a matching theme (portal), say why
+ * it resonates and offer the next step: the journal for Awakening, or for a future portal its waitlist with that portal
+ * chosen. Any link to #find-your-portal opens it.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -83,32 +84,45 @@ function doi_finder_shortcode() {
 	$printed = true;
 
 	$reasons = doi_finder_reasons();
+	$cfg     = doi_portals();
 	$portals = array();
-	foreach ( doi_portals()['items'] as $i => $p ) {
+	$first   = null; // the journal that can be explored now (Awakening): where a future result also points
+	foreach ( $cfg['items'] as $i => $p ) {
+		$url   = doi_portal_url( $p );
+		$stage = '' === $url ? 'soon' : $p['stage'];
+		if ( null === $first && '' !== $url ) {
+			$first = array(
+				'name' => $p['name'],
+				'url'  => $url,
+			);
+		}
 		$portals[] = array(
 			'name'   => $p['name'],
 			'desc'   => $p['desc'],
 			'color'  => $p['color'],
-			'url'    => doi_portal_url( $p ),
+			'url'    => $url,
+			'label'  => doi_portal_label( $cfg, $p, $stage ),
+			'later'  => 'soon' === $stage, // a future journal: the result offers its waitlist, never a purchase
 			'reason' => isset( $reasons[ $i ] ) ? $reasons[ $i ] : '',
 		);
 	}
 	$config = array(
 		'questions' => doi_finder_questions(),
 		'portals'   => $portals,
+		'first'     => $first,
 		'text'      => array(
 			'step'      => __( 'Question %1$s of %2$s', 'door-open-intro' ),
 			'back'      => __( 'Back', 'door-open-intro' ),
-			'kicker'    => __( 'Your portal', 'door-open-intro' ),
+			'kicker'    => __( 'The theme that speaks to you', 'door-open-intro' ),
 			'shared'    => __( 'What you shared', 'door-open-intro' ),
 			'why'       => __( 'Why it resonates', 'door-open-intro' ),
-			'explore'   => __( 'Explore %s', 'door-open-intro' ),
 			'journal'   => __( 'Explore the journal', 'door-open-intro' ),
-			'waitlist'  => __( 'Join the waitlist', 'door-open-intro' ),
+			'join'      => $cfg['waitlist_button'],
+			'begin'     => __( 'Begin with %s', 'door-open-intro' ),
 			'again'     => __( 'Start again', 'door-open-intro' ),
 		),
 		'journal'   => '#awakening-journal',
-		'waitlist'  => '#waitlist',
+		'waitlist'  => '' !== $cfg['waitlist_url'] ? $cfg['waitlist_url'] : '#waitlist',
 	);
 
 	wp_enqueue_style( 'doi-finder', DOI_URL . 'assets/finder.css', array(), DOI_VERSION );
